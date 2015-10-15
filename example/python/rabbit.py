@@ -12,8 +12,6 @@ import client.connect as connect
 
 __author__ = 'roberto'
 
-BASE = 'tcp://127.0.0.1:5555'
-
 def distance(x0, y0, x1, y1):
     return ((x1 - x0) ** 2 + (y1 - y0) ** 2) ** 0.5
 
@@ -40,8 +38,9 @@ def goto(robot, x, y):
     return not data.isDead
 
 def main(argv):
-
-    robot = connect.Connect(BASE)
+    
+    server_addr = "tcp://" + argv[1] + ":" + str(argv[2])
+    robot = connect.Connect(server_addr)
     status = robot.create_robot(robot.default_creation_params("Rabbit"))
 
     if status.isWellSpecifiedRobot:

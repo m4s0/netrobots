@@ -29,7 +29,7 @@ class Board:
     def debug_message(self, s):
         self._log.write(s + "\n")
 
-    def create_robot(self, original_name, configurations):
+    def create_robot(self, original_name, configurations, timeTick, realTimeTick):
         """
         Create a new robot with some configurations, and add to the current board.
         Return an inactive status in case of problems.
@@ -53,8 +53,7 @@ class Board:
         else:
             self.add_robot(_new_robot)
 
-        return _new_robot.get_exportable_status()
-
+        return _new_robot.get_exportable_status(timeTick, realTimeTick)
 
     def add_robot(self, robot):
         """Add the robot inside the board."""
@@ -97,7 +96,7 @@ class Board:
             explosions=dict([(k, v.get_status()) for k, v in self._explosions.items()]),
             radar=dict(self._radar),
             kdr=self.kdr,
-            global_time=self._global_time
+            global_time=self._global_time,
         )
         self._radar = dict([(k, v) for k, v in self._radar.items() if v['spawntime'] + 1.0 > time.time()])
         return ret
@@ -406,7 +405,7 @@ class Robot:
             reloading=self._reloading
         )
 
-    def get_exportable_status(self):
+    def get_exportable_status(self, timeTick, realTimeTick):
         """
         Convert the internal robot status to a status that can be view from external robot controllers.
         :return: RobotStatus
@@ -427,6 +426,8 @@ class Robot:
         r.maxSpeed = int(self._max_speed)
         r.isReloading = self._reloading
         r.firedNewMissile = self.fired_new_missile
+        r.timeTick=timeTick
+        r.realTimeTick=realTimeTick
 
         if self.scan_degree is not None:
             p = ScanStatus()

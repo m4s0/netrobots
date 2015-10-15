@@ -2,7 +2,7 @@
 
 import json
 from random import randint
-from rabbit import goto, BASE
+from rabbit import goto
 
 import sys
 import os
@@ -12,8 +12,10 @@ import client.connect as connect
 
 __author__ = 'roberto'
 
-def main():
-    robot = connect.Connect(BASE)
+def main(argv):
+
+    server_addr = "tcp://" + argv[1] + ":" + str(argv[2])
+    robot = connect.Connect(server_addr)
     robot.create_robot(robot.default_creation_params("Sniper"))
 
     goto(robot, 500, 500)
@@ -38,4 +40,4 @@ def main():
     robot.delete_robot()
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv)

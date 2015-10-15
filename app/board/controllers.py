@@ -4,7 +4,6 @@ import app
 import server.game_server as game_server
 import zmq
 
-
 def get_localSocket():
     """
     Open a socket only one time, and then cache it for each application context/thread.

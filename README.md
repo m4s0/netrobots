@@ -1,7 +1,7 @@
 NETROBOT - Realtime
 ===================
 
-An experimental fork of [https://github.com/gbinside/netrobots]
+An experimental fork of [https://github.com/gbinside/netrobots], using ZMQ and Protobuffer.
 
 Liberamente basato su P-ROBOTS [http://corewar.co.uk/probots/p-robo4.txt]
 
@@ -22,17 +22,34 @@ Starting
 
 On main directory
 
-  python run.py
+  python run.py [ip-address] [web-port] [zmq-port] [simulation-passes-by-second] [network-commands-by-second]
 
-Open the browser on
+Suggest default configurations are:
 
-  http://localhost:8080/
+  python run.py 0.0.0.0 8098 1234 4 2
 
-Launch some demo robot
+With these settings:
+* all the IP ports of the host can be used for starting web and ZMQ connessions
+* http connesion start on port 8098
+* zmq connessions start on port 1234
+* every second of simulated time, there can be until 4 commands issued from any robot. So a robot can perform an action every 1/4 of simulated second
+* every second of real time, the commands from clients are checked 2 times. Every command is related to 1/4 of simulated time, so the ratio between real time and simulated time is 1/2 in this case
+* the ratio is used for allowing robots on small network to issue commands, slowing down the simulated world
+
+Open the browser at
+
+  http://[ip-address]:[web-port]/
+
+Launch some demo robot, specifying the connection params:
 
   cd example/python
-  python rabbit.py
-  python sniper.py
+  python rabbit.py [ip-address] [zmq-port]
+  python sniper.py [ip-address] [zmq-port]
+
+NOTE:
+* the browser must be launched, otherwise the game threads do not start
+* the browser after first launch can also be closed
+* the majority of resources are used from the JavaScript code running on clients and showing the board, so a pure server with many boards should do not display the board
 
 Robots Coding Instructions
 ==========================
@@ -51,14 +68,6 @@ Study:
 * "client/netrobots.proto" for a description of the RobotStatus
 * "client/connect.py" for the API class
 * "example/python" for some example of Robot
-
-WEBSERVER
-=========
-
-Il webserver è scritto in Flask e sviluppato in TDD; le post sono codificate come normali POST, quindi ad esempio,
- `speed=100&degree=0` , ma le risposte sono in json.
-
-Per le varie rotte consultare gli esempi o il file `test.py`
 
 BOARD
 =====
@@ -86,11 +95,6 @@ CANNONATE
 I proiettili si intendono in tiro balistico, quindi non vengono considerate le eventuali collisioni inaspettate con robot di passaggio,
  perché non vi sono, inquanto i colpi viaggiano più in alto.
 I proiettili sparati fuori dall'arena esplodono fuori, non collidono coi bordi per lo stesso motivo di cui sopra.
-
-NOTE TECNICHE
-=============
-
-La versione committata gira con un rapporto temporale di x2
 
 TODO
 =====

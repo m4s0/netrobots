@@ -7,6 +7,7 @@ from client.netrobots_pb2 import *
 import json
 import sys
 import datetime
+import traceback
 
 COMMAND_WAKE_UP = b"tick"
 COMMAND_RESET_GAME = b"reset-game"
@@ -26,6 +27,7 @@ class WakeUpThread(threading.Thread):
         self._client_socket_name = client_socket_name
 
     def run(self):
+
         wake_up_socket = zmq.Context.instance().socket(zmq.REQ)
         wake_up_socket.connect(self._wake_up_socket_name)
 
@@ -33,10 +35,12 @@ class WakeUpThread(threading.Thread):
         client_socket.connect(self._client_socket_name)
 
         while 1:
+            next_wake_time = time.clock() + self._sleep_time
             wake_up_socket.send(COMMAND_WAKE_UP)
+
+            # wait game thread process all the requests
             wake_up_socket.recv()
 
-            next_wake_time = time.clock() + self._sleep_time
             next_pause = next_wake_time - time.clock()
             if next_pause > 0:
                 time.sleep(next_pause)
@@ -45,10 +49,11 @@ class WakeUpThread(threading.Thread):
 class GameThread(threading.Thread):
     """Update the Game Status."""
 
-    def __init__(self, deltatime, wake_up_socket_name, client_socket_name, log):
+    def __init__(self, deltatime, realTime, wake_up_socket_name, client_socket_name, log):
         threading.Thread.__init__(self)
         self._log = log
-        self._deltatime = deltatime
+        self._deltaTime = deltatime
+        self._realTime = realTime
         self._wake_up_socket_name = wake_up_socket_name
         self._client_socket_name = client_socket_name
         self._board = Board()
@@ -82,7 +87,6 @@ class GameThread(threading.Thread):
 
         while True:
             message = wake_up_socket.recv()
-
             try:
                 if message == COMMAND_WAKE_UP:
                     self.process_robots_requests(client_socket)
@@ -95,11 +99,27 @@ class GameThread(threading.Thread):
                 else:
                     wake_up_socket.send(b"")
             except :
-                self.debug_message("Unexpected error " + str(sys.exc_info()[0]))
+                print "Unexpected error " + str(sys.exc_info()[0])
+                traceback.print_exc()
                 wake_up_socket.send(b"")
 
     def process_robots_requests(self, client_socket):
-        self._board.tick(self._deltatime)
+        # this is an absolute value, because it is parameter of how much details must be taken in account,
+        # for detecting collisions and so on.
+        simulationTick = 0.125
+
+        # this is the time to simulate, before the robot can issue another control command.
+        # This is a game-play parameter.
+        deltaTime = self._deltaTime
+
+        while deltaTime > 0:
+           if simulationTick < deltaTime:
+             deltaTime = deltaTime - simulationTick
+           else:
+             simulationTick = deltaTime
+             deltaTime = 0
+
+           self._board.tick(simulationTick)
 
         self.processed_robots.clear()
 
@@ -115,7 +135,8 @@ class GameThread(threading.Thread):
                 self.process_robot_command(v['command'], v['sender_address'], client_socket)
                 self.processed_robots[token] = True
             except:
-                self.debug_message("Unexpected error " + str(sys.exc_info()[0]))
+                print "Unexpected error " + str(sys.exc_info()[0])
+                traceback.print_exc()
                 client_socket.send_multipart([v['sender_address'], b'', b''])
                 # in ZMQ is mandatory sending an answer
 
@@ -135,7 +156,8 @@ class GameThread(threading.Thread):
 
             except:
                 # there is an error processing the command for this client.
-                self.debug_message("Unexpected error " + str(sys.exc_info()[0]))
+                print "Unexpected error " + str(sys.exc_info()[0])
+                traceback.print_exc()
                 if sender_address is not None:
                     client_socket.send_multipart([sender_address, b'', b''])
                     # in ZMQ is mandatory sending an answer
@@ -156,7 +178,7 @@ class GameThread(threading.Thread):
             elif token in self.queued_robot_messages:
                     self.banned_robots[token] = True
                     robot = self._board.get_robot_by_token(token)
-                    self.debug_message("Banned " + token + ". Board time is " + str(self._board.global_time()) + ", robot time is " + str(robot.last_command_executed_at_global_time))
+                    print "Banned " + token + ". Board time is " + str(self._board.global_time()) + ", robot time is " + str(robot.last_command_executed_at_global_time)
             else:
                 if token in self.processed_robots:
                     self.queued_robot_messages[token] = {'sender_address': sender_address, 'command': command }
@@ -188,7 +210,7 @@ class GameThread(threading.Thread):
             reloading_time=request.reloadingTime
         )
 
-        status = self._board.create_robot(request.name, extra)
+        status = self._board.create_robot(request.name, extra, self._deltaTime, self._realTime)
         client_socket.send_multipart([sender_address, b'', status.SerializeToString()])
 
     def process_delete_robot_request(self, request, sender_address, client_socket):
@@ -196,7 +218,6 @@ class GameThread(threading.Thread):
         client_socket.send_multipart([sender_address, b'', b''])
 
     def process_robot_request(self, request, sender_address, client_socket):
-
         robot = self._board.get_robot_by_token(request.token)
         if robot is None:
             raise NameError('Unknown Robot')
@@ -218,4 +239,4 @@ class GameThread(threading.Thread):
         if request.HasField('drive'):
             robot.drive(request.drive.direction, request.drive.speed)
 
-        client_socket.send_multipart([sender_address, b'', robot.get_exportable_status().SerializeToString()])
+        client_socket.send_multipart([sender_address, b'', robot.get_exportable_status(self._deltaTime, self._realTime).SerializeToString()])
