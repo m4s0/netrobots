@@ -15,7 +15,7 @@ Package Requirements
 
 On Debian/Ubuntu
 
-  sudo aptitude install python-flask protbuf-compiler libzmq3 libzmq3-dev python-zmq
+  sudo aptitude install python-flask protbuf-compiler python-protobuf libzmq3 libzmq3-dev python-zmq
 
 Starting
 --------
@@ -43,8 +43,15 @@ Open the browser at
 Launch some demo robot, specifying the connection params:
 
   cd example/python
-  python rabbit.py [ip-address] [zmq-port]
+  python rabbit.py [ip-address] [zmq-port]i
   python sniper.py [ip-address] [zmq-port]
+
+For example if they are on the same server
+
+  python rabbit.py 127.0.0.1 1234
+  python sniper.py 127.0.0.1 1234
+
+You can launch a demo robot more than one time, if you want populate the board.
 
 NOTE:
 * the browser must be launched, otherwise the game threads do not start
