@@ -4,11 +4,37 @@ import hashlib
 from math import cos, sin, radians, atan2, degrees, pi
 from random import randint
 import time
-from client.netrobots_pb2 import *
+from server.rest_api.models.robot_status import  RobotStatus
+from server.rest_api.models.robot_configuration import  RobotConfiguration
+from server.rest_api.models.robot_health import  RobotHealth
+from server.rest_api.models.semi_aperture import SemiAperture
+from server.rest_api.models.scan_status import ScanStatus
+from server.rest_api.models.token import Token
+from server.rest_api.models.speed import Speed
+from server.rest_api.models.direction import Direction
+from server.rest_api.models.distance import Distance
 
 class Board:
-    def __init__(self, size=(1000, 1000)):
+    """The Game Model.
+    """
+
+    _simulation_tick = 0.125
+
+    _turn_delta_time = 1.0
+
+    def get_turn_delta_time(self):
+        """How many seconds there are between robot commands.
+        """
+        return self._turn_delta_time
+
+    def get_simulation_tick(self):
+        """An inner param, about the tick used for simulating the board. Less is this value, more accurate is the simulation, but slower it is the calcs.
+        """
+        return self._simulation_tick
+
+    def __init__(self, size=(1000, 1000), turn_delta_time = 1.0, simulation_tick = 0.125):
         self._global_time = 0.0
+        self._next_turn_time = 0.0
         self._size = size
         self.robots = {}
         self.robots_by_token = {}
@@ -19,6 +45,8 @@ class Board:
         self._join_status = None
         self.kdr = {}
         self._log = None
+        self._simulation_tick = simulation_tick
+        self._turn_delta_time = turn_delta_time
 
     def global_time(self):
         return self._global_time
@@ -28,6 +56,22 @@ class Board:
 
     def debug_message(self, s):
         self._log.write(s + "\n")
+
+    def simulate_for_a_turn(self):
+        """Simulate the board for a turn.
+        """
+
+        tick = self._simulation_tick
+
+        remaining_time = self._turn_delta_time
+        while remaining_time> 0:
+            if remaining_time >= tick:
+                remaining_time = remaining_time - tick
+            else:
+                tick = remaining_time
+                remaining_time = 0
+            game.tick(tick)
+
 
     def create_robot(self, original_name, configurations, timeTick, realTimeTick):
         """
@@ -76,6 +120,9 @@ class Board:
         return False
 
     def remove_robot_by_token(self, token):
+        """ :param token: int
+        :return: None
+        """
         if token in self.robots_by_token:
             robot = self.robots_by_token[token]
             return self.remove_robot(robot)
@@ -83,6 +130,10 @@ class Board:
             return False
 
     def get_robot_by_token(self, token):
+        """
+        :param token: int
+        :return: Robot
+        """
         return self.robots_by_token[token]
 
     def reinit(self, size=(1000, 1000)):
@@ -293,8 +344,11 @@ class RobotAlreadyExistsException(Exception):
 START_COORDS = [(250, 500), (750, 500), (500, 250), (500, 750), (250, 250), (750, 750), (750, 250), (250, 750)]
 START_HEADING = [0, 180, 90, 270, 45, 225, 135, 315]
 
+# TODO devo dire che un robot deriva dal RobotStatus in modo che poi posso modificare e leggere direttamente i fields
 
-class Robot:
+class Robot(RobotStatus):
+    """ A robot in the board.
+    """
     def __init__(self, name, count_of_other, configuration=None, is_testing=False):
 
         self._token = hashlib.md5(name + time.strftime('%c')).hexdigest()

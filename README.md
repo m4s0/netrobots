@@ -1,14 +1,23 @@
 NETROBOT - Realtime
 ===================
 
-An experimental fork of [https://github.com/gbinside/netrobots], using ZMQ and Protobuffer.
+An experimental fork of [https://github.com/gbinside/netrobots], using Tornado Python Web Server, and a better REST API. 
 
-Liberamente basato su P-ROBOTS [http://corewar.co.uk/probots/p-robo4.txt]
+Freely inspired/based on P-ROBOTS [http://corewar.co.uk/probots/p-robo4.txt]
 
 NOTE: Tests are not yet converted.
 
+REST API
+========
+
+The API is described in human readable Swagger format at `doc/rest_api.yaml`. Then code for different programming languages, is derived from this file, using the tool `external_tools/swagger-codegen-cli-2.1.6.jar`. 
+
+In the `client` directory there are demo applications for different programming languages. You can use the libraries of the demo in your application. In case of some programming languages, the comments in the `doc/rest_api.yaml` file are not copied to the generated files. Use `doc/rest_api.yaml` as documentation reference of the API.
+
 Getting Started
 ===============
+
+TODO adapt these notes
 
 Package Requirements
 --------------------
@@ -90,18 +99,6 @@ BOARD
               225   270   315
 
 * il robot occupa le sue coordinate, con una raggio di 1 (usato per il calcolo delle collisioni)
-
-ROBOT
-======
-
-~~I robot sono tutti uguali. Le costanti fisiche sono hardcodate per ora.~~
-
-CANNONATE
-=========
-
-I proiettili si intendono in tiro balistico, quindi non vengono considerate le eventuali collisioni inaspettate con robot di passaggio,
- perché non vi sono, inquanto i colpi viaggiano più in alto.
-I proiettili sparati fuori dall'arena esplodono fuori, non collidono coi bordi per lo stesso motivo di cui sopra.
 
 TODO
 =====

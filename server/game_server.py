@@ -1,191 +1,200 @@
-import threading
+"""NetRobots Game Server.
+"""
+import tornado.ioloop
+import tornado.web
+from tornado import gen
+from tornado.concurrent import Future
+import httplib
+from rest_api.api_client import ApiClient
+from server.rest_api.models.robot_command import RobotCommand
+from server.rest_api.models.robot_status import RobotStatus
+from server.game_model import Board, Robot
+
 import time
-import zmq
-import zmq.error
+from datetime import timedelta
 from game_model import *
-from client.netrobots_pb2 import *
 import json
+
+# TODO accetto i parametri di simulazione sulla riga di comando e li spinge nel model e altri posti
+# TODO tiene dietro a delle statistiche di funzionamento e dice se ci sono dei ritardi
+# TODO dire che il codice lavora correttamente solo se vi e` un solo thread in esecuzione e quindi ogni coroutine accede in isolamento alle data structures
+# TODO accept in params the interval between commands
+# TODO gestire caso in cui i robot per un turno non ricevono commands e devono fare comunque qualcosa di sensato
+
+class TurnAnswerFuture(Future):
+    """A TurnHandler waiting a response. The response will be a RobotStatus.
+    """
+
+    # The token of the robot waiting for an answer.
+    token = None
+
+# A dictionay (map) between a robot token, and the corresponding RobotCommand
+# Only allowed tokens from the game server are in this map.
+# A map to None in case the robot has not yet sent the command.
+next_robot_commands = {}
+
+def add_next_robot_command(command):
+    """Return True if the command was added.
+    False if the command is not valid: the robot does not exists, or the robot sent two or more commands in the same turn.
+
+    :param command: RobotCommand
+    """
+    if command.token in next_robot_commands:
+        token = command.token.token
+        if next_robot_commands[token] is None:
+            next_robot_commands[token] = command
+            return True
+    return False
+
+# A list of TurnAnswerFuture.
+# Every TurnHandler registers itself in this list, for waiting a response.
+queued_turn_handler_requests = []
+
+# The current game
+game_board = None
+""" :var game_board: Board
+"""
+
+# The Swagger generated ApiClient
+api_client = None
+
+def process_game_turn():
+    """Process game turn. Update the global state, and send answers to queued turn handlers.
+    """
+    global queued_turn_handler_requests
+    global next_robot_commands
+    global game_board
+
+    # TODO no robot can send a command 2 times, because it does not known in advance the next-token, until it does not receive an answer
+    # TODO leave to None the not received commands
+    # TODO update a stats table with the not received commands for a given robot, using robot-name as key
+    # TODO use a local copy of queuedTurnHandlerRequests
+    # TODO start with an empty queuedTurnHandlerRequests
+    # TODO doing so I'm sure that only requests about next turn are processed, because no new requests are queued
+    # TODO comment these things
+    # TODO start answering to Futures (I must put in the future class the robot token)
+    # TODO return
+    # TODO see if it must also complete common answers for board-viewers, in case first favour answers to robot, then complete answers for board viewers that are on a separate queue
+
+    #
+    # Send commands to robots
+    #
+
+    new_next_robot_commands = {}
+
+    from_old_to_new_tokens = {}
+    for token, command in next_robot_commands.iteritems():
+        """ :var command: RobotCommand
+        """
+        robot = game_board.get_robot(token)
+        if command is None:
+            robot.reset_command()
+            from_old_to_new_tokens[token] = token
+        else:
+            new_token = robot.set_command(command)
+            new_next_robot_commands[new_token] = None
+            from_old_to_new_tokens[token] = new_token
+
+    #
+    # Advance the board.
+    #
+
+    game_board.simulate_for_a_turn()
+
+    #
+    # Return robot state to TurnHandlers
+    #
+
+    handlers_to_process = queued_turn_handler_requests[:]
+
+    # Create a new server state, because after we start answering to Handlers, they can start making request again
+    queued_turn_handler_requests = []
+    next_robot_commands = new_next_robot_commands
+
+    for turn_handler in handlers_to_process:
+        """ :var turn_handler: TurnAnswerFuture
+        """
+        old_token = turn_handler.token()
+        token = from_old_to_new_tokens[old_token]
+        turn_handler.set_result(game_board.get_robot_by_token(token).get_status())
+
+
+class TurnHandler(tornado.web.RequestHandler):
+    """A couroutine receiving requests from remote-clients, and sending answers at each game turn.
+    """
+
+    @gen.coroutine
+    def post(self):
+        global queued_turn_handler_requests
+        global api_client
+
+        if self.request.headers["Content-Type"].startswith("application/json"):
+            try:
+                command = api_client.__deserialize(self.request.body, RobotCommand)
+                if command is None:
+                    self.send_error(tornado.web.HTTPError(httplib.BAD_REQUEST))
+                else:
+                    if add_next_robot_command(command):
+                        handler_future = Future()
+                        queued_turn_handler_requests.append(handler_future)
+                        robot_status = yield handler_future
+
+                        self.set_header("Content-Type", "application/json")
+                        self.write(api_client.sanitize_for_serialization(robot_status))
+
+                else:
+                    self.send_error(tornado.web.HTTPError(httplib.BAD_REQUEST))
+            except:
+                self.send_error(tornado.web.HTTPError(httplib.BAD_REQUEST))
+        else:
+            self.send_error(tornado.web.HTTPError(httplib.BAD_REQUEST))
+
+class CreateRobotHandler(tornado.web.RequestHandler):
+    """Create a new robot, if the request is correct.
+    """
+    # TODO complete
+    # TODO complete also documentation
+
+class RemoveRobotHandler(tornado.web.RequestHandler):
+    """Remove a robot from the game.
+    """
+    # TODO
+
+
+# TODO support the handler for the returning of a board in debug mode
+def make_app():
+    return tornado.web.Application([
+        (r"/robot-create", CreateRobotHandler),
+        (r"/robot-remove", RemoveRobotHandler),
+        (r"/robot-action", TurnHandler),
+    ])
+
+# TODO init game
+
+# TODO use the port specified on the command line
+if __name__ == "__main__":
+    api_client = ApiClient()
+    app = make_app()
+    app.listen(8888)
+
+    gameServer = PeriodicCallback(process_game_turn(), turnDeltaTime * 1000, tornado.ioloop.IOLoop.current())
+    gameServer.start()
+    tornado.ioloop.IOLoop.current().start()
+
+'''
+
+OLD CODE TO ADAPT
+
+import threading
+from client.netrobots_pb2 import *
 import sys
-import datetime
 import traceback
 
 COMMAND_WAKE_UP = b"tick"
 COMMAND_RESET_GAME = b"reset-game"
 COMMAND_GET_BOARD = b"get-board"
 
-class WakeUpThread(threading.Thread):
-    """Advise the GameThread that it must update the game."""
 
-    def __init__(self, sleep_time, wake_up_socket_name, client_socket_name):
-        """Sleep time are the seconds on which the server is suspended waiting requests from the clients.
-        It should be enough for each client, for sending its request, without loosing a turn."""
-
-        threading.Thread.__init__(self)
-        self._sleep_time = sleep_time
-
-        self._wake_up_socket_name = wake_up_socket_name
-        self._client_socket_name = client_socket_name
-
-    def run(self):
-
-        wake_up_socket = zmq.Context.instance().socket(zmq.REQ)
-        wake_up_socket.connect(self._wake_up_socket_name)
-
-        client_socket = zmq.Context.instance().socket(zmq.ROUTER)
-        client_socket.connect(self._client_socket_name)
-
-        while 1:
-            next_wake_time = time.clock() + self._sleep_time
-            wake_up_socket.send(COMMAND_WAKE_UP)
-
-            # wait game thread process all the requests
-            wake_up_socket.recv()
-
-            next_pause = next_wake_time - time.clock()
-            if next_pause > 0:
-                time.sleep(next_pause)
-
-
-class GameThread(threading.Thread):
-    """Update the Game Status."""
-
-    def __init__(self, deltatime, realTime, wake_up_socket_name, client_socket_name, log):
-        threading.Thread.__init__(self)
-        self._log = log
-        self._deltaTime = deltatime
-        self._realTime = realTime
-        self._wake_up_socket_name = wake_up_socket_name
-        self._client_socket_name = client_socket_name
-        self._board = Board()
-        self.pending_robot_command_to_process = None
-
-        self.processed_robots = None
-        self.banned_robots = None
-        self.queued_robot_messages = None
-        self.init_game()
-
-    def debug_message(self, s):
-        self._log.write(s + "\n")
-
-    def init_game(self):
-        self._board = Board()
-        self._board.set_log(self._log)
-        self.pending_robot_command_to_process = None
-
-        self.processed_robots = {}
-        self.banned_robots = {}
-        self.queued_robot_messages = {}
-
-    def run(self):
-
-        wake_up_socket =  zmq.Context.instance().socket(zmq.REP)
-        wake_up_socket.bind(self._wake_up_socket_name)
-
-        client_socket = zmq.Context.instance().socket(zmq.ROUTER)
-
-        client_socket.bind(self._client_socket_name)
-
-        while True:
-            message = wake_up_socket.recv()
-            try:
-                if message == COMMAND_WAKE_UP:
-                    self.process_robots_requests(client_socket)
-                    wake_up_socket.send(b"")
-                elif message == COMMAND_RESET_GAME:
-                    self.init_game()
-                    wake_up_socket.send(b"")
-                elif message == COMMAND_GET_BOARD:
-                    wake_up_socket.send(json.dumps(self._board.get_status()))
-                else:
-                    wake_up_socket.send(b"")
-            except :
-                print "Unexpected error " + str(sys.exc_info()[0])
-                traceback.print_exc()
-                wake_up_socket.send(b"")
-
-    def process_robots_requests(self, client_socket):
-        # this is an absolute value, because it is parameter of how much details must be taken in account,
-        # for detecting collisions and so on.
-        simulationTick = 0.125
-
-        # this is the time to simulate, before the robot can issue another control command.
-        # This is a game-play parameter.
-        deltaTime = self._deltaTime
-
-        while deltaTime > 0:
-           if simulationTick < deltaTime:
-             deltaTime = deltaTime - simulationTick
-           else:
-             simulationTick = deltaTime
-             deltaTime = 0
-
-           self._board.tick(simulationTick)
-
-        self.processed_robots.clear()
-
-        # First process queued robots.
-        queue = self.queued_robot_messages
-        self.queued_robot_messages = {}
-        # DEV-NOTE: these instructions are very important:
-        # * the code must work assuming there are no any more queued robots
-        # * a copy of the reference is maintaned for processing them
-
-        for token, v in queue.iteritems():
-            try:
-                self.process_robot_command(v['command'], v['sender_address'], client_socket)
-                self.processed_robots[token] = True
-            except:
-                print "Unexpected error " + str(sys.exc_info()[0])
-                traceback.print_exc()
-                client_socket.send_multipart([v['sender_address'], b'', b''])
-                # in ZMQ is mandatory sending an answer
-
-        # Update the robots according the new requests from clients.
-        again = True
-        while again:
-            sender_address = None
-            try:
-                sender_address, empty, binary_command = client_socket.recv_multipart(zmq.NOBLOCK)
-                command = MainCommand()
-                command.ParseFromString(binary_command)
-                self.process_robot_command(command, sender_address, client_socket)
-
-            except zmq.error.Again:
-                # there are no more messages to process in the queue
-                again = False
-
-            except:
-                # there is an error processing the command for this client.
-                print "Unexpected error " + str(sys.exc_info()[0])
-                traceback.print_exc()
-                if sender_address is not None:
-                    client_socket.send_multipart([sender_address, b'', b''])
-                    # in ZMQ is mandatory sending an answer
-
-    def process_robot_command(self, command, sender_address, client_socket):
-        if command.HasField('createRobot'):
-            self.process_create_robot_request(command.createRobot, sender_address, client_socket)
-
-        elif command.HasField('deleteRobot'):
-            self.process_delete_robot_request(command.deleteRobot, sender_address, client_socket)
-
-        elif command.HasField('robotCommand'):
-            token = command.robotCommand.token
-
-            if token in self.banned_robots:
-                # nothing to do, avoid to answer to these requests
-                pass
-            elif token in self.queued_robot_messages:
-                    self.banned_robots[token] = True
-                    robot = self._board.get_robot_by_token(token)
-                    print "Banned " + token + ". Board time is " + str(self._board.global_time()) + ", robot time is " + str(robot.last_command_executed_at_global_time)
-            else:
-                if token in self.processed_robots:
-                    self.queued_robot_messages[token] = {'sender_address': sender_address, 'command': command }
-                    robot = self._board.get_robot_by_token(token)
-                else:
-                    self.processed_robots[token] = True
-                    self.process_robot_request(command.robotCommand, sender_address, client_socket)
 
     def process_create_robot_request(self, request, sender_address, client_socket):
         """
@@ -217,26 +226,4 @@ class GameThread(threading.Thread):
         self._board.remove_robot_by_token(request.token)
         client_socket.send_multipart([sender_address, b'', b''])
 
-    def process_robot_request(self, request, sender_address, client_socket):
-        robot = self._board.get_robot_by_token(request.token)
-        if robot is None:
-            raise NameError('Unknown Robot')
-
-        assert isinstance(robot, Robot)
-
-        robot.last_command_executed_at_global_time = self._board.global_time()
-
-        if request.HasField('scan'):
-            robot.scan(request.scan.direction, request.scan.semiaperture)
-        else:
-            robot.no_scan()
-
-        if request.HasField('cannon'):
-            robot.cannon(request.cannon.direction, request.cannon.distance)
-        else:
-            robot.no_cannon()
-
-        if request.HasField('drive'):
-            robot.drive(request.drive.direction, request.drive.speed)
-
-        client_socket.send_multipart([sender_address, b'', robot.get_exportable_status(self._deltaTime, self._realTime).SerializeToString()])
+'''
