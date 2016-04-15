@@ -1,0 +1,578 @@
+swagger: "2.0"
+info:
+  title: "NetRobots API"
+  description: "NetRobots API"
+  version: "2.0.0"
+
+schemes:
+  - http
+  - https
+
+produces:
+  - application/json
+
+consumes:
+  - application/json
+
+paths:
+  /robot-create:
+    post:
+      description: Create a new robot.
+      parameters:
+        - name: configuration
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/RobotConfiguration'
+      responses:
+        200:
+          description: The returned configuration can be different from the suggested configuration.
+          schema:
+            $ref: '#/definitions/RobotStatus'
+
+  /robot-action:
+    post:
+      description: Send an action to a robot. The server will answer after the simulation turn is completed, and it will return the token for the next simulation turn.
+      parameters:
+        - name: command
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/RobotCommand'
+      responses:
+        '200':
+          description: The status of the robot, after executing the command.
+          schema:
+            $ref: '#/definitions/RobotStatus'
+            
+  /board-info:
+    get:
+      description: Board Info
+      parameters: []
+      responses:
+        200:
+          description: Board Info
+          schema:
+            $ref: '#/definitions/BoardInfo'
+
+  /board-events:
+    get:
+      description: Board Info
+      parameters: []
+      responses:
+        200:
+          description: Board Info
+          schema:
+            $ref: '#/definitions/BoardInfo'
+
+##
+## Type Definitions
+##
+## DEV-NOTE: Swagger in this version does not support synonyms types,
+## so in case of types with only one property like Distance, Token, Speed, etc.. the type description was repeated in different places,
+## for favouring elegant API usage respect elegant API definition.
+##
+
+definitions:
+
+  ScanStatus:
+    type: object
+    description: The result of last scan command.
+    properties:
+      direction:
+        description: Direction expressed in degrees. 0 degree is EAST, 90 degree is NORTH, 180 degree is WEST, 270 degree is SOUTH
+        type: number
+        format: float
+        minimum: 0
+        maximum: 359
+      semiApertureAngle:
+        description: The aperture angle, in degree, divided by 2.
+        type: number
+        minimum: 0
+        maximum: 180
+        format: float
+      distance:
+        type: number
+        format: float
+
+  RobotConfiguration:
+    type: object
+    description: |
+      Configurations of the robot.
+    required:
+      - name
+    properties:
+      name:
+        type: string
+      maxHitPoints:
+        type: number
+        format: float
+        description: 'The initial health of the robot. Default value: 100.0'
+      maxSpeed:
+        type: number
+        format: float
+        description: 'Max speed of the robot. Default value: 27.0 m/s'
+      acceleration:
+        type: number
+        format: float
+        description: 'Acceleration of the robot. Default value 9.0 m/s^2'
+      decelleration:
+        type: number
+        format: float
+        description: 'The max deceleration in case of reduction of the speed. A negative number. Default value -5.0 m/s^2'
+      maxSterlingSpeed:
+        type: number
+        format: float
+        description: |
+          The maximim speed at which a robot can change direction.  Default value 13.0 m/s.
+          If the robot changes direction when it has a speed greater than this value, it start decelerating without changing direction, until it does not reach the steerling speed.
+      maxScanDistance:
+        type: number
+        format: float
+        description: 'The max distance the robot can identify targets. Default value: 700 m/s.'
+      maxFireDistance:
+        type: number
+        format: float
+        description: 'The max distance a bullet can reach. Default value: 700 m/s.'
+      bulletSpeed:
+        type: number
+        format: float
+        description: 'The speed of a fired bullet. Default value: 500 m/s.'
+      bulletDamage:
+        type: number
+        format: float
+        description: |
+          The max health damage a bullet can inflict when it reach exactly the target.
+          Default value: 10.0.
+          Actually max allowed value is 20 and minimum allowed value is 1.
+          The bullet hit exactly a target in case the explosion is within a certain distance, actually 2 meters.
+          The bullet can make a limited damage if it explodes near the target.
+          The limited damage decrease linearly from 50% to 0%, from 2 meters to 45 meters distance from the target.
+          When you configure a robot, there is an associated a strenght using an heuristic, based on robot configured characteristics.
+          Then the bulletDamage is increased until it does not reach the maximum possibile value.
+      cannonReloadingTime:
+        type: number
+        format: float
+        description: |
+          How many seconds the robot must wait before firing another missile. Min value: 1s. Max value: 6s. Deafault value: 1s.
+
+  RobotStatus:
+    type: object
+    description: The current status of the robot.
+    required:
+      - name
+      - token
+      - configuration
+      - simulationTime
+      - timeTick
+      - realTimeTick
+      - health
+      - isDead
+      - direction
+      - speed
+      - posX
+      - posY
+      - cannonReloadingTime
+      - firedNewMissile
+      - maxBoardX
+      - maxBoardY
+    properties:
+      name:
+        type: string
+      token:
+        description: |
+          A unique token, that changes after a command is sent from a robot to the server.
+          It is used for recognizing a robot, and chaining the commands, because a robot can not issue another command, before it receive an answer from the server, with the next token to use.
+        type: string
+      configuration:
+          $ref: '#/definitions/RobotConfiguration'
+      simulationTime:
+        type: number
+        format: float
+        description: The current simulation time.
+      timeTick:
+        type: number
+        format: float
+        description: "The next command will be executed at simulationTime + this value. Usually it is a constant value for all the course of the simulation."
+      realTimeTick:
+        type: number
+        format: float
+        description: |
+          The time in seconds, the system waits before processing the next request from remote robots.
+          With slow nework connections this value should be higher, because otherwise some remote robots could miss some game turns.
+          NOTE: this is the real world time you have for sending the next command without loosing a turn.
+          NOTE: this time differs from timeIncrement, because timeIncrement is the simulation time that pass between two robots commands.
+      points:
+        type: number
+        format: float
+        description: The sum of all hit points of the fired missiles. The robot with more hit points is the winner.
+      health:
+        type: number
+        format: float
+        description: The health of a robot. 0 when a robot is dead (completely destroyed).
+      isDead:
+        type: boolean
+        description: True if the robot is dead, or if during initial creation params are out of range.
+      direction:
+        description: Direction expressed in degrees. 0 degree is EAST, 90 degree is NORTH, 180 degree is WEST, 270 degree is SOUTH
+        type: number
+        format: float
+        minimum: 0
+        maximum: 359
+      speed:
+        type: number
+        format: float
+      posX:
+        type: number
+        format: float
+      posY:
+        type: number
+        format: float
+      maxBoardX:
+        type: number
+        format: float
+      maxBoardY:
+        type: number
+        format: float
+      cannonReloadingTime:
+        type: number
+        format: float
+        description: 0 if the robot can fire immediately, the remaining time it must wait otherwise.
+      firedNewMissile:
+        type: boolean
+        description: True if the robot in last command fired a missile.
+      scanStatus:
+        $ref: '#/definitions/ScanStatus'
+
+  FireCommand:
+    type: object
+    description: Missiles have a balistic trajectory, so they do not intercept robots in the middle of the path, but they damage only robot at the end of the path. Missile outside arena make no arm.
+    required:
+      - direction
+      - distance
+    properties:
+      direction:
+        description: Direction expressed in degrees. 0 degree is EAST, 90 degree is NORTH, 180 degree is WEST, 270 degree is SOUTH
+        type: number
+        format: float
+        minimum: 0
+        maximum: 359
+      distance:
+        type: number
+        format: float
+
+  DriveCommand:
+    type: object
+    required:
+      - direction
+      - speed
+    properties:
+      direction:
+        description: Direction expressed in degrees. 0 degree is EAST, 90 degree is NORTH, 180 degree is WEST, 270 degree is SOUTH
+        type: number
+        format: float
+        minimum: 0
+        maximum: 359
+      speed:
+        type: number
+        format: float
+
+  ScanCommand:
+    type: object
+    required:
+      - direction
+      - semiaperture
+    properties:
+      direction:
+        description: Direction expressed in degrees. 0 degree is EAST, 90 degree is NORTH, 180 degree is WEST, 270 degree is SOUTH
+        type: number
+        format: float
+        minimum: 0
+        maximum: 359
+      semiaperture:
+        description: The aperture angle, in degree, divided by 2.
+        type: number
+        minimum: 0
+        maximum: 180
+        format: float
+
+  RobotCommand:
+    type: object
+    description: "A Robot can make 3 actions contemporary: drive, scan, fire. If an action can not be performed, it will be ignored. If the drive action is not specified, the robot will continue moving according the last drive command."
+    required:
+      - token
+    properties:
+      token:
+        description: |
+          A unique token, that changes after a command is sent from a robot to the server.
+          It is used for recognizing a robot, and chaining the commands, because a robot can not issue another command, before it receive an answer from the server, with the next token to use.
+        type: string
+      fire:
+        $ref: '#/definitions/FireCommand'
+      drive:
+        $ref: '#/definitions/DriveCommand'
+      scan:
+        $ref: '#/definitions/ScanCommand'
+
+  ##
+  ## Board Viewer Type Definitions
+  ##
+  ## These types are used (internally) only from the Board Viewer, and not from user Robots.
+  ## So only developers of NetRobots should use them.
+  ## Using them is like cheating, because you can knows all the positions of other robots,
+  ## without using the radar.
+  ##
+
+  BoardInfo:
+    type: object
+    description: Initial settings of the board.
+    properties:
+      maxBoardX:
+        type: number
+        format: float
+      maxBoardY:
+        type: number
+        format: float
+      streamDelay:
+        type: number
+        format: float
+        description: the time in real seconds, beetwen event lists
+      turnDeltaTime:
+        type: number
+        format: float
+        description: Every robot can send and execute a command only after this simulated interval of time.
+      networkLatency:
+        type: number
+        format: float
+        description: Every robot can send a command only after this interval of time.
+      startTime:
+        type: number
+        format: float
+        description: The events starts at the specified simulation time.
+      endTime:
+        type: number
+        format: float
+        description: The events ends at the specified simulation time.
+      events:
+        type: array
+        items:
+          $ref: '#/definitions/Event'
+
+  RobotInfo:
+    type: object
+    description: Info about the robot.
+    required:
+      - robotId
+      - posX
+      - posY
+      - direction
+      - currentSpeed
+      - requiredSpeed
+      - acceleration
+      - reloadingTime
+      - health
+    properties:
+      robotId:
+        type: number
+        format: int
+      posX:
+        type: number
+        format: float
+      posY:
+        type: number
+        format: float
+      direction:
+        description: Direction expressed in degrees. 0 degree is EAST, 90 degree is NORTH, 180 degree is WEST, 270 degree is SOUTH
+        type: number
+        format: float
+        minimum: 0
+        maximum: 359
+      currentSpeed:
+        type: number
+        format: float
+      requiredSpeed:
+        type: number
+        format: float
+      acceleration:
+        type: number
+        format: float
+      reloadingTime:
+        type: number
+        format: float
+        description: 0 if the robot can fire immediately.
+      health:
+        type: number
+        format: float
+        description: 0 if the robot is dead.
+
+  Event:
+    type: object
+    description: Base class from which all different type of Events are derived.
+    discriminator: eventType
+    required:
+      - eventType
+      - activationTime
+    properties:
+      eventType:
+        type: number
+        format: int
+        description: The type of event generated. Used for simulating object-oriented subclassing.
+      activationTime:
+        type: number
+        format: float
+        description: When the event become active.
+ 
+  EventCreateRobot:
+    description: An event signaling to the UI, the creation of a Robot. eventType is 1.
+    allOf:
+    - $ref: '#/definitions/Event'
+    - type: object
+      required:
+      - eventType
+      - robot
+      - name
+      - color
+      properties:
+        eventType:
+          type: number
+          format: int
+          description: tag 1
+        robot:
+          $ref: '#/definitions/RobotInfo'
+        name:
+          type: string
+          description: Human readable name for the robot.
+        color:
+          type: string
+          description: A color assigned to the robot.
+
+  EventRemoveRobot:
+    allOf:
+    - $ref: '#/definitions/Event'
+    - type: object
+      required:
+      - eventType
+      - robot
+      properties:
+         eventType:
+          type: number
+          format: int
+          description: tag 2
+         robot:
+          $ref: '#/definitions/RobotInfo'
+
+  EventScan:
+    allOf:
+    - $ref: '#/definitions/Event'
+    - type: object
+      required:
+      - eventType
+      - direction
+      - semiaperture
+      - scanMaxDistance
+      - robot
+      properties:
+        eventType:
+          type: number
+          format: int
+          description: tag 3
+        direction:
+          description: Direction expressed in degrees. 0 degree is EAST, 90 degree is NORTH, 180 degree is WEST, 270 degree is SOUTH
+          type: number
+          format: float
+          minimum: 0
+          maximum: 359
+        semiaperture:
+          description: The aperture angle, in degree, divided by 2.
+          type: number
+          minimum: 0
+          maximum: 180
+          format: float
+        scanMaxDistance:
+          type: number
+          format: float
+          description: The maximum possible distance of the scan.
+        robot:
+          $ref: '#/definitions/RobotInfo'
+        hitRobot:
+           $ref: '#/definitions/RobotInfo'
+
+  EventMissile:
+    allOf:
+    - $ref: '#/definitions/Event'
+    - type: object
+      required:
+      - eventType
+      - robot
+      - direction
+      - distance
+      - speed
+      properties:
+        eventType:
+          type: number
+          format: int
+          description: tag 4
+        robot:
+          $ref: '#/definitions/RobotInfo'
+        direction:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 359
+        distance:
+          type: number
+          format: float
+        speed:
+          type: number
+          format: float
+
+  EventExplosion:
+    allOf:
+    - $ref: '#/definitions/Event'
+    - type: object
+      required:
+      - eventType
+      - robot
+      - damage
+      properties:
+        eventType:
+          type: number
+          format: int
+          description: tag 5
+        robot:
+          $ref: '#/definitions/RobotInfo'
+        hitRobot:
+          $ref: '#/definitions/RobotInfo'
+        damage:
+          type: number
+          format: float
+
+  EventRobotCollision:
+    allOf:
+    - $ref: '#/definitions/Event'
+    - type: object
+      required:
+      - eventType
+      - robot
+      properties:
+        eventType:
+          type: number
+          format: int
+          description: tag 6
+        robot:
+          $ref: '#/definitions/RobotInfo'
+
+  EventDrive:
+    allOf:
+    - $ref: '#/definitions/Event'
+    - type: object
+      required:
+      - eventType
+      - robot
+      properties:
+        eventType:
+          type: number
+          format: int
+          description: tag 7
+        robot:
+          $ref: '#/definitions/RobotInfo'

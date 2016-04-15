@@ -1,0 +1,898 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>NetRobots API</title>
+    <style type="text/css">
+      body { 
+	font-family: Trebuchet MS, sans-serif;
+	font-size: 15px;
+	color: #444;
+	margin-right: 24px;
+}
+
+h1	{
+	font-size: 25px;
+}
+h2	{
+	font-size: 20px;
+}
+h3	{
+	font-size: 16px;
+	font-weight: bold;
+}
+hr	{
+	height: 1px;
+	border: 0;
+	color: #ddd;
+	background-color: #ddd;
+	display: none;
+}
+
+.app-desc {
+  clear: both;
+  margin-left: 20px;
+}
+.param-name {
+  width: 100%;
+}
+.license-info {
+  margin-left: 20px;
+}
+
+.license-url {
+  margin-left: 20px;
+}
+
+.model {
+  margin: 0 0 0px 20px;
+}
+
+.method {
+  margin-left: 20px;
+}
+
+.method-notes	{
+	margin: 10px 0 20px 0;
+	font-size: 90%;
+	color: #555;
+}
+
+pre {
+  padding: 10px;
+  margin-bottom: 2px;
+}
+
+.http-method {
+ text-transform: uppercase;
+}
+
+pre.get {
+  background-color: #0f6ab4;
+}
+
+pre.post {
+  background-color: #10a54a;
+}
+
+pre.put {
+  background-color: #c5862b;
+}
+
+pre.delete {
+  background-color: #a41e22;
+}
+
+.huge	{
+	color: #fff;
+}
+
+pre.example {
+  background-color: #f3f3f3;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+code {
+  white-space: pre;
+}
+
+.nickname {
+  font-weight: bold;
+}
+
+.method-path {
+  font-size: 1.5em;
+  background-color: #0f6ab4;
+}
+
+.up {
+  float:right;
+}
+
+.parameter {
+  width: 500px;
+}
+
+.param {
+  width: 500px;
+  padding: 10px 0 0 20px;
+  font-weight: bold;
+}
+
+.param-desc {
+  width: 700px;
+  padding: 0 0 0 20px;
+  color: #777;
+}
+
+.param-type {
+  font-style: italic;
+}
+
+.param-enum-header {
+width: 700px;
+padding: 0 0 0 60px;
+color: #777;
+font-weight: bold;
+}
+
+.param-enum {
+width: 700px;
+padding: 0 0 0 80px;
+color: #777;
+font-style: italic;
+}
+
+.field-label {
+  padding: 0;
+  margin: 0;
+  clear: both;
+}
+
+.field-items	{
+	padding: 0 0 15px 0;
+	margin-bottom: 15px;
+}
+
+.return-type {
+  clear: both;
+  padding-bottom: 10px;
+}
+
+.param-header {
+  font-weight: bold;
+}
+
+.method-tags {
+  text-align: right;
+}
+
+.method-tag {
+  background: none repeat scroll 0% 0% #24A600;
+  border-radius: 3px;
+  padding: 2px 10px;
+  margin: 2px;
+  color: #FFF;
+  display: inline-block;
+  text-decoration: none;
+}
+    </style>
+  </head>
+  <body>
+  <h1>NetRobots API</h1>
+    <div class="app-desc">NetRobots API</div>
+    <div class="app-desc">More information: <a href="https://helloreverb.com">https://helloreverb.com</a></div>
+    <div class="app-desc">Contact Info: <a href="hello@helloreverb.com">hello@helloreverb.com</a></div>
+    <div class="app-desc">Version: 2.0.0</div>
+    <div class="license-info">All rights reserved</div>
+    <div class="license-url">http://apache.org/licenses/LICENSE-2.0.html</div>
+  <h2>Access</h2>
+  
+
+  <h2><a name="__Methods">Methods</a></h2>
+  [ Jump to <a href="#__Models">Models</a> ]
+
+  
+  <h2>Table of Contents </h2>
+  <div class="method-summary"></div>
+  
+  <ol>
+  
+  
+  
+  <li><a href="#boardEventsGet"><code><span class="http-method">get</span> /board-events</code></a></li>
+  
+  <li><a href="#boardInfoGet"><code><span class="http-method">get</span> /board-info</code></a></li>
+  
+  <li><a href="#robotActionPost"><code><span class="http-method">post</span> /robot-action</code></a></li>
+  
+  <li><a href="#robotCreatePost"><code><span class="http-method">post</span> /robot-create</code></a></li>
+  
+  
+  
+  </ol>
+  
+
+  
+  
+  
+  
+  <div class="method"><a name="boardEventsGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /board-events</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">boardEventsGet</span>)</div>
+    
+    <div class="method-notes">Board Info</div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#BoardInfo">BoardInfo</a>
+      
+    </div>
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    Board Info
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="boardInfoGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /board-info</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">boardInfoGet</span>)</div>
+    
+    <div class="method-notes">Board Info</div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#BoardInfo">BoardInfo</a>
+      
+    </div>
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    Board Info
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="robotActionPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /robot-action</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">robotActionPost</span>)</div>
+    
+    <div class="method-notes">Send an action to a robot. The server will answer after the simulation turn is completed, and it will return the token for the next simulation turn.</div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">command (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#RobotStatus">RobotStatus</a>
+      
+    </div>
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    The status of the robot, after executing the command.
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="robotCreatePost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /robot-create</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">robotCreatePost</span>)</div>
+    
+    <div class="method-notes">Create a new robot.</div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">configuration (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#RobotStatus">RobotStatus</a>
+      
+    </div>
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    The returned configuration can be different from the suggested configuration.
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  
+  
+  
+
+  <div class="up"><a href="#__Models">Up</a></div>
+  <h2><a name="__Models">Models</a></h2>
+  [ Jump to <a href="#__Methods">Methods</a> ]
+
+  <h2>Table of Contents</h2>
+  <ol>
+  
+  
+    <li><a href="#BoardInfo"><code>BoardInfo</code></a></li>
+  
+  
+  
+    <li><a href="#DriveCommand"><code>DriveCommand</code></a></li>
+  
+  
+  
+    <li><a href="#Event"><code>Event</code></a></li>
+  
+  
+  
+    <li><a href="#EventCreateRobot"><code>EventCreateRobot</code></a></li>
+  
+  
+  
+    <li><a href="#EventDrive"><code>EventDrive</code></a></li>
+  
+  
+  
+    <li><a href="#EventExplosion"><code>EventExplosion</code></a></li>
+  
+  
+  
+    <li><a href="#EventMissile"><code>EventMissile</code></a></li>
+  
+  
+  
+    <li><a href="#EventRemoveRobot"><code>EventRemoveRobot</code></a></li>
+  
+  
+  
+    <li><a href="#EventRobotCollision"><code>EventRobotCollision</code></a></li>
+  
+  
+  
+    <li><a href="#EventScan"><code>EventScan</code></a></li>
+  
+  
+  
+    <li><a href="#FireCommand"><code>FireCommand</code></a></li>
+  
+  
+  
+    <li><a href="#RobotCommand"><code>RobotCommand</code></a></li>
+  
+  
+  
+    <li><a href="#RobotConfiguration"><code>RobotConfiguration</code></a></li>
+  
+  
+  
+    <li><a href="#RobotInfo"><code>RobotInfo</code></a></li>
+  
+  
+  
+    <li><a href="#RobotStatus"><code>RobotStatus</code></a></li>
+  
+  
+  
+    <li><a href="#ScanCommand"><code>ScanCommand</code></a></li>
+  
+  
+  
+    <li><a href="#ScanStatus"><code>ScanStatus</code></a></li>
+  
+  
+  </ol>
+
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="BoardInfo">BoardInfo</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">maxBoardX </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      <div class="param">maxBoardY </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      <div class="param">streamDelay </div><div class="param-desc"><span class="param-type">Float</span> the time in real seconds, beetwen event lists</div>
+      
+      <div class="param">turnDeltaTime </div><div class="param-desc"><span class="param-type">Float</span> Every robot can send and execute a command only after this simulated interval of time.</div>
+      
+      <div class="param">networkLatency </div><div class="param-desc"><span class="param-type">Float</span> Every robot can send a command only after this interval of time.</div>
+      
+      <div class="param">startTime </div><div class="param-desc"><span class="param-type">Float</span> The events starts at the specified simulation time.</div>
+      
+      <div class="param">endTime </div><div class="param-desc"><span class="param-type">Float</span> The events ends at the specified simulation time.</div>
+      
+      <div class="param">events </div><div class="param-desc"><span class="param-type">array[Event]</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="DriveCommand">DriveCommand</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">direction </div><div class="param-desc"><span class="param-type">Float</span> Direction expressed in degrees. 0 degree is EAST, 90 degree is NORTH, 180 degree is WEST, 270 degree is SOUTH</div>
+      
+      <div class="param">speed </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Event">Event</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">eventType </div><div class="param-desc"><span class="param-type">BigDecimal</span> The type of event generated. Used for simulating object-oriented subclassing.</div>
+      
+      <div class="param">activationTime </div><div class="param-desc"><span class="param-type">Float</span> When the event become active.</div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="EventCreateRobot">EventCreateRobot</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">eventType </div><div class="param-desc"><span class="param-type">BigDecimal</span> tag 1</div>
+      
+      <div class="param">activationTime </div><div class="param-desc"><span class="param-type">Float</span> When the event become active.</div>
+      
+      <div class="param">robot </div><div class="param-desc"><span class="param-type">RobotInfo</span> </div>
+      
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> Human readable name for the robot.</div>
+      
+      <div class="param">color </div><div class="param-desc"><span class="param-type">String</span> A color assigned to the robot.</div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="EventDrive">EventDrive</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">eventType </div><div class="param-desc"><span class="param-type">BigDecimal</span> tag 7</div>
+      
+      <div class="param">activationTime </div><div class="param-desc"><span class="param-type">Float</span> When the event become active.</div>
+      
+      <div class="param">robot </div><div class="param-desc"><span class="param-type">RobotInfo</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="EventExplosion">EventExplosion</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">eventType </div><div class="param-desc"><span class="param-type">BigDecimal</span> tag 5</div>
+      
+      <div class="param">activationTime </div><div class="param-desc"><span class="param-type">Float</span> When the event become active.</div>
+      
+      <div class="param">robot </div><div class="param-desc"><span class="param-type">RobotInfo</span> </div>
+      
+      <div class="param">hitRobot </div><div class="param-desc"><span class="param-type">RobotInfo</span> </div>
+      
+      <div class="param">damage </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="EventMissile">EventMissile</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">eventType </div><div class="param-desc"><span class="param-type">BigDecimal</span> tag 4</div>
+      
+      <div class="param">activationTime </div><div class="param-desc"><span class="param-type">Float</span> When the event become active.</div>
+      
+      <div class="param">robot </div><div class="param-desc"><span class="param-type">RobotInfo</span> </div>
+      
+      <div class="param">direction </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      <div class="param">distance </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      <div class="param">speed </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="EventRemoveRobot">EventRemoveRobot</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">eventType </div><div class="param-desc"><span class="param-type">BigDecimal</span> tag 2</div>
+      
+      <div class="param">activationTime </div><div class="param-desc"><span class="param-type">Float</span> When the event become active.</div>
+      
+      <div class="param">robot </div><div class="param-desc"><span class="param-type">RobotInfo</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="EventRobotCollision">EventRobotCollision</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">eventType </div><div class="param-desc"><span class="param-type">BigDecimal</span> tag 6</div>
+      
+      <div class="param">activationTime </div><div class="param-desc"><span class="param-type">Float</span> When the event become active.</div>
+      
+      <div class="param">robot </div><div class="param-desc"><span class="param-type">RobotInfo</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="EventScan">EventScan</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">eventType </div><div class="param-desc"><span class="param-type">BigDecimal</span> tag 3</div>
+      
+      <div class="param">activationTime </div><div class="param-desc"><span class="param-type">Float</span> When the event become active.</div>
+      
+      <div class="param">direction </div><div class="param-desc"><span class="param-type">Float</span> Direction expressed in degrees. 0 degree is EAST, 90 degree is NORTH, 180 degree is WEST, 270 degree is SOUTH</div>
+      
+      <div class="param">semiaperture </div><div class="param-desc"><span class="param-type">Float</span> The aperture angle, in degree, divided by 2.</div>
+      
+      <div class="param">scanMaxDistance </div><div class="param-desc"><span class="param-type">Float</span> The maximum possible distance of the scan.</div>
+      
+      <div class="param">robot </div><div class="param-desc"><span class="param-type">RobotInfo</span> </div>
+      
+      <div class="param">hitRobot </div><div class="param-desc"><span class="param-type">RobotInfo</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="FireCommand">FireCommand</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">direction </div><div class="param-desc"><span class="param-type">Float</span> Direction expressed in degrees. 0 degree is EAST, 90 degree is NORTH, 180 degree is WEST, 270 degree is SOUTH</div>
+      
+      <div class="param">distance </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="RobotCommand">RobotCommand</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">token </div><div class="param-desc"><span class="param-type">String</span> A unique token, that changes after a command is sent from a robot to the server.\nIt is used for recognizing a robot, and chaining the commands, because a robot can not issue another command, before it receive an answer from the server, with the next token to use.\n</div>
+      
+      <div class="param">fire </div><div class="param-desc"><span class="param-type">FireCommand</span> </div>
+      
+      <div class="param">drive </div><div class="param-desc"><span class="param-type">DriveCommand</span> </div>
+      
+      <div class="param">scan </div><div class="param-desc"><span class="param-type">ScanCommand</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="RobotConfiguration">RobotConfiguration</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">maxHitPoints </div><div class="param-desc"><span class="param-type">Float</span> The initial health of the robot. Default value: 100.0</div>
+      
+      <div class="param">maxSpeed </div><div class="param-desc"><span class="param-type">Float</span> Max speed of the robot. Default value: 27.0 m/s</div>
+      
+      <div class="param">acceleration </div><div class="param-desc"><span class="param-type">Float</span> Acceleration of the robot. Default value 9.0 m/s^2</div>
+      
+      <div class="param">decelleration </div><div class="param-desc"><span class="param-type">Float</span> The max deceleration in case of reduction of the speed. A negative number. Default value -5.0 m/s^2</div>
+      
+      <div class="param">maxSterlingSpeed </div><div class="param-desc"><span class="param-type">Float</span> The maximim speed at which a robot can change direction.  Default value 13.0 m/s.\nIf the robot changes direction when it has a speed greater than this value, it start decelerating without changing direction, until it does not reach the steerling speed.\n</div>
+      
+      <div class="param">maxScanDistance </div><div class="param-desc"><span class="param-type">Float</span> The max distance the robot can identify targets. Default value: 700 m/s.</div>
+      
+      <div class="param">maxFireDistance </div><div class="param-desc"><span class="param-type">Float</span> The max distance a bullet can reach. Default value: 700 m/s.</div>
+      
+      <div class="param">bulletSpeed </div><div class="param-desc"><span class="param-type">Float</span> The speed of a fired bullet. Default value: 500 m/s.</div>
+      
+      <div class="param">bulletDamage </div><div class="param-desc"><span class="param-type">Float</span> The max health damage a bullet can inflict when it reach exactly the target.\nDefault value: 10.0.\nActually max allowed value is 20 and minimum allowed value is 1.\nThe bullet hit exactly a target in case the explosion is within a certain distance, actually 2 meters.\nThe bullet can make a limited damage if it explodes near the target.\nThe limited damage decrease linearly from 50% to 0%, from 2 meters to 45 meters distance from the target.\nWhen you configure a robot, there is an associated a strenght using an heuristic, based on robot configured characteristics.\nThen the bulletDamage is increased until it does not reach the maximum possibile value.\n</div>
+      
+      <div class="param">cannonReloadingTime </div><div class="param-desc"><span class="param-type">Float</span> How many seconds the robot must wait before firing another missile. Min value: 1s. Max value: 6s. Deafault value: 1s.\n</div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="RobotInfo">RobotInfo</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">robotId </div><div class="param-desc"><span class="param-type">BigDecimal</span> </div>
+      
+      <div class="param">posX </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      <div class="param">posY </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      <div class="param">direction </div><div class="param-desc"><span class="param-type">Float</span> Direction expressed in degrees. 0 degree is EAST, 90 degree is NORTH, 180 degree is WEST, 270 degree is SOUTH</div>
+      
+      <div class="param">currentSpeed </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      <div class="param">requiredSpeed </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      <div class="param">acceleration </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      <div class="param">reloadingTime </div><div class="param-desc"><span class="param-type">Float</span> 0 if the robot can fire immediately.</div>
+      
+      <div class="param">health </div><div class="param-desc"><span class="param-type">Float</span> 0 if the robot is dead.</div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="RobotStatus">RobotStatus</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">token </div><div class="param-desc"><span class="param-type">String</span> A unique token, that changes after a command is sent from a robot to the server.\nIt is used for recognizing a robot, and chaining the commands, because a robot can not issue another command, before it receive an answer from the server, with the next token to use.\n</div>
+      
+      <div class="param">configuration </div><div class="param-desc"><span class="param-type">RobotConfiguration</span> </div>
+      
+      <div class="param">simulationTime </div><div class="param-desc"><span class="param-type">Float</span> The current simulation time.</div>
+      
+      <div class="param">timeTick </div><div class="param-desc"><span class="param-type">Float</span> The next command will be executed at simulationTime + this value. Usually it is a constant value for all the course of the simulation.</div>
+      
+      <div class="param">realTimeTick </div><div class="param-desc"><span class="param-type">Float</span> The time in seconds, the system waits before processing the next request from remote robots.\nWith slow nework connections this value should be higher, because otherwise some remote robots could miss some game turns.\nNOTE: this is the real world time you have for sending the next command without loosing a turn.\nNOTE: this time differs from timeIncrement, because timeIncrement is the simulation time that pass between two robots commands.\n</div>
+      
+      <div class="param">points </div><div class="param-desc"><span class="param-type">Float</span> The sum of all hit points of the fired missiles. The robot with more hit points is the winner.</div>
+      
+      <div class="param">health </div><div class="param-desc"><span class="param-type">Float</span> The health of a robot. 0 when a robot is dead (completely destroyed).</div>
+      
+      <div class="param">isDead </div><div class="param-desc"><span class="param-type">Boolean</span> True if the robot is dead, or if during initial creation params are out of range.</div>
+      
+      <div class="param">direction </div><div class="param-desc"><span class="param-type">Float</span> Direction expressed in degrees. 0 degree is EAST, 90 degree is NORTH, 180 degree is WEST, 270 degree is SOUTH</div>
+      
+      <div class="param">speed </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      <div class="param">posX </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      <div class="param">posY </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      <div class="param">maxBoardX </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      <div class="param">maxBoardY </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      <div class="param">cannonReloadingTime </div><div class="param-desc"><span class="param-type">Float</span> 0 if the robot can fire immediately, the remaining time it must wait otherwise.</div>
+      
+      <div class="param">firedNewMissile </div><div class="param-desc"><span class="param-type">Boolean</span> True if the robot in last command fired a missile.</div>
+      
+      <div class="param">scanStatus </div><div class="param-desc"><span class="param-type">ScanStatus</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="ScanCommand">ScanCommand</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">direction </div><div class="param-desc"><span class="param-type">Float</span> Direction expressed in degrees. 0 degree is EAST, 90 degree is NORTH, 180 degree is WEST, 270 degree is SOUTH</div>
+      
+      <div class="param">semiaperture </div><div class="param-desc"><span class="param-type">Float</span> The aperture angle, in degree, divided by 2.</div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="ScanStatus">ScanStatus</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">direction </div><div class="param-desc"><span class="param-type">Float</span> Direction expressed in degrees. 0 degree is EAST, 90 degree is NORTH, 180 degree is WEST, 270 degree is SOUTH</div>
+      
+      <div class="param">semiApertureAngle </div><div class="param-desc"><span class="param-type">Float</span> The aperture angle, in degree, divided by 2.</div>
+      
+      <div class="param">distance </div><div class="param-desc"><span class="param-type">Float</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  </body>
+</html>

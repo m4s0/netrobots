@@ -1,14 +1,29 @@
-NETROBOT - Realtime
-===================
+NETROBOT
+========
 
-An experimental fork of [https://github.com/gbinside/netrobots], using ZMQ and Protobuffer.
+This is a fork of [https://github.com/gbinside/netrobots], using Tornado Python Web Server, and a better REST API.
 
-Liberamente basato su P-ROBOTS [http://corewar.co.uk/probots/p-robo4.txt]
+Freely inspired/based on P-ROBOTS [http://corewar.co.uk/probots/p-robo4.txt]
 
-NOTE: Tests are not yet converted.
+Up to date it is in alpha/development state. See `DEV.org` file for more info.
+
+REST API
+========
+
+The API is described in an human readable Swagger format in `doc/rest_api.yaml` file.
+
+Code for different programming languages, is derived from this file, using the tool `external_tools/swagger-codegen-cli-2.1.6.jar`.
+
+In the `robot_examples` directory there are demo applications for different programming languages.
+
+Up to date there are real tested robots only for Python.
+For the other programming languages there is only the Swagger generated skeleton,
+that can be used for acessing the server.
 
 Getting Started
 ===============
+
+TODO adapt these notes
 
 Package Requirements
 --------------------
@@ -53,60 +68,22 @@ For example if they are on the same server
 
 You can launch a demo robot more than one time, if you want populate the board.
 
-NOTE:
-* the browser must be launched, otherwise the game threads do not start
-* the browser after first launch can also be closed
-* the majority of resources are used from the JavaScript code running on clients and showing the board, so a pure server with many boards should do not display the board
-
 Robots Coding Instructions
 ==========================
 
-Programming Language
---------------------
+Robots can be written using any programming language, because they communicate with the server using REST API.
 
-Robots can be written using any programming language, because they communicate with the server using:
-* Proto Buffers serialization library
-* ZeroMQ message API
+Study `doc/rest_api.yaml` for a description of the API.
 
-API
----
+The code for many clients is generated from swagger, into `clients` directory. See also `external_tools` directory for the code generating the API.
 
-Study:
-* "client/netrobots.proto" for a description of the RobotStatus
-* "client/connect.py" for the API class
-* "example/python" for some example of Robot
+Development
+===========
 
-BOARD
-=====
-* L'arena è di 1000x1000 basata in 0,0 in basso a sinistra
-* gli angoli si misurano in gradi
+See file `DEV.org`.  
 
-              135    90   45
-                  \  |  /
-                   \ | /
-             180 --- x --- 0
-                   / | \
-                  /  |  \
-              225   270   315
+LICENSE
+=======
 
-* il robot occupa le sue coordinate, con una raggio di 1 (usato per il calcolo delle collisioni)
+GPLv3+
 
-ROBOT
-======
-
-~~I robot sono tutti uguali. Le costanti fisiche sono hardcodate per ora.~~
-
-CANNONATE
-=========
-
-I proiettili si intendono in tiro balistico, quindi non vengono considerate le eventuali collisioni inaspettate con robot di passaggio,
- perché non vi sono, inquanto i colpi viaggiano più in alto.
-I proiettili sparati fuori dall'arena esplodono fuori, non collidono coi bordi per lo stesso motivo di cui sopra.
-
-TODO
-=====
-
-* ~~I robot hanno tutti le stesse costanti di base, implementare un sistema a punti per personalizzarsi il robot.~~
-* Raffinare la logica di sterzo sopra la velocità massima di sterzo (`_max_sterling_speed`), magari con aggiunta di danno autoinflitto
-* L'urto con qualcosa infligge 2 punti di danno a prescindere dalla velocità al momento dell'impatto. Farlo dipendere dalla velocità?
-* Muri; ora l'arena è vuota, si potrebbere prevedere muri casuali, ma questo imporrebbe modifiche anche allo scanner.

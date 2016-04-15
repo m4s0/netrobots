@@ -1,0 +1,113 @@
+* Development Notes 
+The application is in development/alpha phase. There are still many TODO inside the source code files, and these notes.
+
+** TODO Game Server 
+
+TODO remove not used code
+TODO ship also the ELM compiled JS files, with the code, so it is immediable executable
+TODO adapt the README of the application
+TODO create a standard Setupy.py file and study the Pip.py approach, because up to date development is done using nix
+*** TODO Test installation inside a Docker container
+***** TODO create Dockerfile
+***** TODO publish also the Dockerfile, as an alternative method respect NixOS
+***** TODO check the requirements.txt files
+*** TODO Game Server Stats
+ Informs for each client of:
+ - latency of each client communication
+ - CPU load on the server (tested now and it is very very low)
+
+ Latency tests: 40 ms verso google, 80 ms verso il server in germania (millisecodi) da casa mia.
+
+ TODO include note on latency and on division between simulation time and network communication time
+
+** TODO Board Viewer
+*** Why Elm
+- DOM model is efficiently update from Elm
+- a simple DOM creation code is created, and then Elm calculate automatically efficient incremental updates, because the creation code is declarative
+- static typing and assurance of code without run-time errors
+- reasonable compact JavaScript code is generated
+- competitive in performances (better) than JavaScript reactive libraries
+
+*** Server Client Communication
+Event-based synchro:
+- the server send high-level commands like:
+  - create robot (ID) - the JS mantain a relationship
+  - destroy robot (ID) 
+  - create missile with direction, speed and acceleration
+  - explosion at position and duration
+  - drive: robot, from, to, direction, acceleration, final speed
+  - scan: robot, direction, result, ecc...
+- the server does not send low level events like intermediate position of robots and missiles
+- the client interpolate the robot and missile position, according the redraw time
+- if there is an event changing direction/acceleration and other info of interpolated objects, the client is informed from the server, so the client position calculations are always exact
+
+TODO complete the package description file of ELM at the end
+TODO remove not used code for the old Boand JS based
+
+*** Graphics
+
+TODO study better animation library  https://github.com/mdgriffith/elm-style-animation
+
+TODO the home-page include:
+- TODO reference to the project home-page
+- TODO REST-API documentation automatically generated
+- DONE link to the board
+
+DONE initial screen:
+- JS ask for buffering
+- JS show a SVG animation with the waiting of new data
+- JS start displaying the board
+
+TODO scan graphics:
+- show for a scan the hitted robot, the source of the target with a line
+- show the area of scan involved, but only until the hitted robot
+- in case of scan without success show the area but without hitting line
+
+TODO missile graphics
+- use the same color of the firinng robot
+- show the target position
+- show the explosion and the involved area
+
+TODO tanks graphics:
+- show the thanks in a fade-away trace so it is more clear its movements, the source of a missile and the 
+- leave signes of the thank track, as individual elements (referenced in defs), and then change their opacity and their live over time
+- this generate a lot of elements in the scene graph (QT support millions of elements in the scene graph, but this is not the case for SVG probably)
+- leave a sign every 1 second or similar, like a series of "dots"
+- there cane be interruptions between the signs
+- a sign is an element, with a start visibility, and an opacity or color level fading to 0 in a certain time duration.
+- the thank is composed of the body and of the tower
+- the tower rotate itself in less than 0.5 seconds before the fire and then fire
+- the missile path is dotted and it comprehend also the future destination
+
+TODO coordinate model:
+- TODO physical: dimension of the canvas on the screen 100% - 100% and preserve proportions
+- TODO use visible dimensions for tanks and missiles on the board, related to EM characters
+- TODO logical dimensions of the canvas on the board (the dimensions of the board)
+- TODO for partial movements and positions there are float values
+
+TODO add text/labels as robot name
+TODO test always transparency of the SCAN and use a light color because a robot can always view 
+TODO it should use a different color for each robot, and use the same color for the scan with transparency, so you know where the robot is viewing
+TODO it should compose the colors of different scans toghether
+
+TODO send also complete stats about missing turns of the ROBOTS
+
+* Game Rules Improvements
+MAYBE hitting an enemy is 1/2 damage as health
+
+MAYBE there are no hitting/premium points for the damage on the enemy robot (maybe)
+
+MAYBE the API signal if a Robot hit the wall or another robot with a specific message
+
+** Robot Parameter Customizations
+
+Robots can be created using different parameters, like speed, acceleration, bullet damage.
+
+The method
+
+    server.game_model.Robot.get_configured_strength(self):
+
+make an estimate of the robot characteristics, and it filter out Robots that are too much strong.
+
+With time and experience, this method should be improved, for avoiding Robot with unfair advantages.
+
