@@ -1,4 +1,20 @@
-__author__ = 'Roberto'
+'''
+    Copyright 2015, 2016 Roberto Gambuzzi <gbinside@gmail.com>
+    Copyright 2015, 2016 Massimo Zaniboni <massimo.zaniboni@gmail.com>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+'''
 
 import hashlib
 from math import cos, sin, radians, atan2, degrees, pi
@@ -7,6 +23,10 @@ import time
 from server.rest_api.models.robot_status import RobotStatus
 from server.rest_api.models.robot_configuration import RobotConfiguration
 from server.rest_api.models.scan_status import ScanStatus
+from server.rest_api.models.robot_command import RobotCommand
+from server.rest_api.models.drive_command import DriveCommand
+from server.rest_api.models.scan_command import ScanCommand
+
 from server.rest_api.models.robot_command import RobotCommand
 import uuid
 
@@ -34,33 +54,33 @@ class Board:
         self._global_time = 0.0
         self._next_turn_time = 0.0
         self._size = size
-        self.robots_by_token = {}
+        self._robots_by_token = {}
         self._missiles = {}
         self._explosions = {}
-        self._radar = {}
         self._wall_hit_damage = 2
         self._join_status = None
-        self.kdr = {}
-        self._log = None
         self._simulation_tick = simulation_tick
         self._turn_delta_time = turn_delta_time
 
     def global_time(self):
         return self._global_time
 
-    def set_log(self, v):
-        self._log = v
-
-    def debug_message(self, s):
-        self._log.write(s + "\n")
-
     def simulate_for_a_turn(self):
         """Simulate the board for a turn.
         """
 
-        tick = self._simulation_tick
+        # Apply all fire commands immediately, because it is the moment in which the robot
+        # has more information
 
-        remaining_time = self._turn_delta_time
+        for robot in self._robots_by_token.values():
+            """:type robot: Robot"""
+
+
+        # Apply all the movement commands, then simulate
+
+
+        tick = self.get_simulation_tick()
+        remaining_time = self.get_turn_delta_time()
         while remaining_time > 0:
             if remaining_time >= tick:
                 remaining_time = remaining_time - tick
@@ -69,8 +89,12 @@ class Board:
                 remaining_time = 0
             self.tick(tick)
 
+        # Apply all scan commands, because it is the moment when the scan
+        # is more precise.
 
-    def create_robot(self, original_name, configurations, timeTick, realTimeTick):
+        # TODO reset the commands for every robot
+
+    def create_robot(self, original_name, configurations):
         """
         Create a new robot with some configurations, and add to the current board.
         Return an inactive status in case of problems.
@@ -89,58 +113,55 @@ class Board:
             c = c + 1
             name = original_name + "_" + str(c)
 
-        _new_robot = Robot(name, len(self.robots), configuration=configurations, is_testing=False)
-
-        if _new_robot.calc_value() > 327:
-            _new_robot._dead = True
-            _new_robot._well_specified_robot = False
-            _new_robot._token = ''
-        else:
-            self.add_robot(_new_robot)
-
-        return _new_robot.get_exportable_status(timeTick, realTimeTick)
+        robot = Robot(name, uuid.uuid4(), self, configuration=configurations)
+        self.add_robot(robot)
+        return robot
 
     def add_robot(self, robot):
-        """Add the robot inside the board.
+        """ Add the robot inside the board.
+
+        :type robot: Robot
         """
-        if robot.get_name() not in self.robots:
-            robot.set_board(self)
-            robot.set_log(self._log)
-            self.robots[robot.get_name()] = robot
-            self.robots_by_token[robot.get_token()] = robot
-            robot.last_command_executed_at_global_time = self.global_time()
-            return True
-        else:
-            return False
+
+        robot.set_board(self)
+        self._robots_by_token[robot.get_token()] = robot
+        robot._last_command_executed_at_global_time = self.global_time()
 
     def remove_robot(self, robot):
-        if robot.get_name() in self.robots:
-            robot.set_board(None)
-            del self.robots[robot.get_name()]
-            del self.robots_by_token[robot.get_token()]
+        """
+        :type robot: Robot
+        :rtype: bool
+        """
+        return self.remove_robot_by_token(robot.get_token())
+
+        if robot.get_token() in self._robots_by_token:
+            del self._robots_by_token[robot.get_token()]
             return True
         return False
 
     def remove_robot_by_token(self, token):
-        """ :param token: int
-        :return: None
         """
-        if token in self.robots_by_token:
-            robot = self.robots_by_token[token]
-            return self.remove_robot(robot)
+        :type token: str
+        :rtype: bool
+        """
+        if token in self._robots_by_token:
+            del self._robots_by_token[token]
+            return True
         else:
             return False
 
     def get_robot_by_token(self, token):
         """
-        :param token: int
-        :return: Robot
+        :rtype token: int
+        :rtype: Robot
         """
-        return self.robots_by_token[token]
+        return self._robots_by_token[token]
 
     def reinit(self, size=(1000, 1000)):
+        """Reinit. Used in debug. """
         self.__init__(size)
 
+    # TODO vedere cosa deve tornare
     def get_status(self):
         ret = dict(
             size=self._size,
@@ -151,42 +172,62 @@ class Board:
             kdr=self.kdr,
             global_time=self._global_time,
         )
-        self._radar = dict([(k, v) for k, v in self._radar.items() if v['spawntime'] + 1.0 > time.time()])
         return ret
 
+    # TODO essere sicuri di tornare il valore del radar
+
     def radar(self, scanning_robot, xy, max_scan_distance, degree, resolution):
-        key = hashlib.md5(repr(dict(time=time.time(), xy=xy, degree=degree, resolution=resolution,
-                                    distance=max_scan_distance))).hexdigest()
-        self._radar[key] = dict(xy=xy, degree=degree, resolution=resolution, distance=max_scan_distance,
-                                spawntime=time.time())
+        """
+        :type scanning_robot: Robot
+        :type xy: (float, float)
+        :type max_scan_distance: float
+        :type degree: float
+        :type resolution: float
+        :rtype: float
+
+        :return: 0 if there is no found object, the object with minimum distance otherwise.
+        """
+
         ret = []
         degree %= 360
-        for robot in [x for x in self.robots.values() if x != scanning_robot]:
+        for robot in [x for x in self._robots_by_token.values() if x != scanning_robot]:
+            """:type robot: Robot"""
+
             if robot.is_dead():
                 continue
-            distance, angle = robot.distance(xy)
-            angle = (180 + angle) % 360
+            distance, angle = robot.distance_from_point(xy)
+            angle = float(int(180 + angle) % 360)
+
             if self.angle_distance(angle, degree) > resolution:
                 continue
             if distance > max_scan_distance:
                 continue
             ret.append(distance)
-        return min(ret) if ret else 0
+        return min(ret) if ret else 0.0
 
-    def detect_collision(self, robot, xy, dxy):
-        x, y = xy
+    def detect_collision(self, robot, dxy):
+        """
+        :type robot: Robot
+        :type dxy: (float, float)
+        :rtype: (float, float, float)
+        :return: x, y, damage to apply, or None for no collision
+        """
+
+        x, y = robot.get_xy()
         dx, dy = dxy
+
         # collision with other robots
         step = max(abs(dx), abs(dy))
         if step:  # the robot is moving
             x0, y0 = x - dx, y - dy
             stepx = float(dx) / float(step)
             stepy = float(dy) / float(step)
-            for other_robot in [j for j in self.robots.values() if j != robot]:
+            for other_robot in [j for j in self._robots_by_token.values() if j != robot]:
+                """:type other_robot: Robot """
                 xp, yp = x0, y0
                 for i in xrange(int(step) + 1):
-                    dist, angle = other_robot.distance((xp, yp))
-                    if dist < 2:  # 1 per ogni robot
+                    dist, angle = other_robot.distance_from_point((xp, yp))
+                    if dist < 2.0:  # 1 per ogni robot
                         other_robot.take_damage(self._wall_hit_damage)
                         other_robot.block()
                         teta = atan2(dy, dx)
@@ -196,6 +237,7 @@ class Board:
                         return xp, yp, self._wall_hit_damage
                     xp += stepx
                     yp += stepy
+
         # COLLISION WITH WALLS
         if x < 0:
             y = y - dy * x / dx
@@ -216,23 +258,34 @@ class Board:
         return None
 
     def spawn_missile(self, xy, degree, distance, bullet_speed, bullet_damage, owner=None):
-        key = hashlib.md5(repr(
-            dict(time=time.time(), xy=xy, degree=degree, distance=distance, bullet_speed=bullet_speed,
-                 bullet_damage=bullet_damage))).hexdigest()
-        missile = Missile(self, xy, degree, distance, bullet_speed, bullet_damage, owner)
+        """
+        :type xy: (float, float)
+        :type degree: float
+        :type distance: float
+        :type bullet_speed: float
+        :type bullet_damage: float
+        :type owner: Robot
+        """
+
+        key = uuid.uuid4()
+        missile = Missile(self, key, xy, degree, distance, bullet_speed, bullet_damage, owner)
         self._missiles[key] = missile
 
     def remove_missile(self, missile):
-        self._missiles = dict([(k, x) for k, x in self._missiles.items() if x != missile])
-        # del self._missiles[self._missiles.index(missile)]
+        """
+        :type missile: Missile
+        """
+        del self._missiles[missile]
 
     def spawn_explosion(self, xy, damage, owner=None):
-        # TODO usare UUID magari a un contatore in avanti
-        key = hashlib.md5(repr(dict(time=time.time(), xy=xy, damage=damage))).hexdigest()
-        self._explosions[key] = Explosion(self, xy, damage, owner)
+        key = uuid.uuid4()
+        self._explosions[key] = Explosion(self, key, xy, damage, owner)
 
     def remove_explosion(self, explosion):
-        self._explosions = dict([(k, x) for k, x in self._explosions.items() if x != explosion])
+        """
+        :type explosion: Explosion
+        """
+        del self._explosions[explosion.key]
 
     def tick(self, deltatime=0.125):
         self._global_time = self._global_time + deltatime
@@ -248,9 +301,6 @@ class Board:
         # manage robots
         for r in self.robots.values():
             r.tick(deltatime)
-
-    def new_robot(self, clazz, name):
-        return clazz(self, name, len(self.robots))
 
     @staticmethod
     def angle_distance(angle, degree):
@@ -270,8 +320,18 @@ class Board:
 
 
 class Missile:
-    def __init__(self, board, xy, degree, distance, speed, damage, owner=None):
-        assert isinstance(board, Board)
+    def __init__(self, board, key, xy, degree, distance, speed, damage, owner=None):
+        """
+        :type board: Board
+        :type key: str
+        :type xy: (float, float)
+        :type degree: float
+        :type distance: float
+        :type speed: float
+        :type damage: float
+        :type owner: Robot
+        """
+        self._key = key
         self._board = board
         self._owner = owner
         self._x, self._y = xy
@@ -317,7 +377,6 @@ class Explosion:
 
     def get_max_damage(self):
         """
-
         :return: the maximum damage of the explosio
         :rtype: float
         """
@@ -336,7 +395,6 @@ class Explosion:
         :return: the distance after an explosion does 0 damage.
         :rtype: float
         """""
-
         return 45.0
 
     def get_initial_relative_damage_of_near_explosion(self):
@@ -344,7 +402,6 @@ class Explosion:
         :return: the perc of damage of an explosion not hitting the enemy robot. From 0 to 1.
         :rtype: float
         """
-
         return 0.1
 
     def get_damage(self, distance):
@@ -369,10 +426,15 @@ class Explosion:
 
         return self.get_max_damage() * self.get_initial_relative_damage_of_near_explosion() * relative_distance
 
-    # TODO adapt here
-
-    def __init__(self, board, xy, damage, owner=None):
-        assert isinstance(board, Board)
+    def __init__(self, board, key, xy, damage, owner=None):
+        """
+        :type board: Board
+        :type key: str
+        :type xy: (float, float)
+        :type damage: float
+        :type owner: Robot
+        """
+        self._key = key
         self._owner = owner
         self._board = board
         self._x, self._y = xy
@@ -384,30 +446,21 @@ class Explosion:
         self._step += 1
         if 1 == self._step:
             # do damage
-            for robot in self._board.robots.values():
-                d, a = robot.distance((self._x, self._y))
-                total_damage = 0
+            for robot in self._board._robots_by_token.values():
+                distance, angle = robot.distance_from_point((self._x, self._y))
+                total_damage = self.get_damage(distance)
 
-                # TODO refactoring here for damage of the explosion
-                for distance, hp_damage in self._damage:
-                    if d <= distance:
-                        total_damage += hp_damage
-
-                if total_damage:
+                if total_damage > 0:
                     robot.take_damage(total_damage)
                     if robot.is_dead():
-                        if robot.get_name() not in self._board.kdr:
-                            self._board.kdr[robot.get_name()] = {'kill': 0, 'death': 0}
-                        self._board.kdr[robot.get_name()]['death'] += 1
-                        if self._owner and self._owner.get_name() not in self._board.kdr:
-                            self._board.kdr[self._owner.get_name()] = {'kill': 0, 'death': 0}
-                        self._board.kdr[self._owner.get_name()]['kill'] += 1
+                        self._board.remove_robot(robot)
 
         elif self._step > 1:
             self._explosion_time -= deltatime
             if self._explosion_time <= 0.0:
                 self._board.remove_explosion(self)
 
+    # TODO aggiornare
     def get_status(self):
         return dict(
             x=self._x,
@@ -417,17 +470,11 @@ class Explosion:
             time=self._explosion_time
         )
 
-
-class RobotAlreadyExistsException(Exception):
-    pass
-
-
-
 class Robot(RobotStatus):
     """ A robot in the board.
     """
 
-    def __init__(self, name, token, configuration=None):
+    def __init__(self, name, token, board, configuration=None):
         """
         :param name: the name of the robot
         :param token: the unique token
@@ -435,20 +482,26 @@ class Robot(RobotStatus):
 
         :type name: str
         :type token: str
+        :type board: Board
         :type configuration: RobotConfiguration
         """
 
-        self.last_command_executed_at_global_time = 0.0
+        self._last_command_executed_at_global_time = 0.0
         self._speed = 0.0
         self._required_speed = 0.0
-        self._pos_x, self._pos_y = float(randint(100, 900)), float(randint(100, 900))
         self._direction = float(randint(0,359))
         self._fired_new_missile = False
         self._reloading_counter = 0.0
+        self._board = board
+        self._next_command = None
 
-        # TODO test that the robot is far from another robot, otherwise use another position
-
-        # TODO vedere se devo modificare altre cose
+        # Find an initial position without collisions
+        free_position = False
+        while not free_position:
+            self._pos_x, self._pos_y = float(randint(100, 900)), float(randint(100, 900))
+            collision = self._board.detect_collision(self, (1, 1))
+            if collision is None:
+                free_position = True
 
         if configuration is None:
             self.set_to_default_configured_strenght()
@@ -456,6 +509,27 @@ class Robot(RobotStatus):
             self._configuration = configuration
             self.normalize_to_valid_strenght()
 
+    def set_next_command(self, command):
+        """
+        Set the command, and register using a new token.
+
+        :type command: RobotCommand
+        """
+        self._next_command = command
+        self._board.remove_robot(self)
+        self._token = uuid.uuid4()
+        self._board.add_robot(self)
+
+    def get_next_command(self):
+        """
+        :rtype: RobotCommand
+        """
+        return self._next_command
+
+    def reset_next_command(self):
+        """Signal that the command is applied.
+        """
+        self._next_command = None
 
     def max_configurable_strenght(self):
         """
@@ -503,18 +577,12 @@ class Robot(RobotStatus):
         TODO adapt this function with experience to a balanced setting
         """
 
-        reloading_time = self._configuration._fire_reloading_time
-        if reloading_time > self.get_maximum_configurable_reloading_time():
-            reloading_time = self.get_maximum_configurable_reloading_time()
-        if reloading_time < self.get_minimum_configurable_reloading_time():
-            reloading_time = self.get_maximum_configurable_reloading_time()
+        reloading_time = min(self._configuration._fire_reloading_time, self.get_maximum_configurable_reloading_time())
+        reloading_time = max(reloading_time, self.get_minimum_configurable_reloading_time())
         fires_for_second = 1.0 / reloading_time
 
-        bullet_damage = self._configuration._bullet_damage
-        if bullet_damage > self.get_maximum_configurable_bullet_damage():
-            bullet_damage = self.get_maximum_configurable_bullet_damage()
-        if bullet_damage < self.get_minimum_configurable_bullet_damage():
-            bullet_damage = self.get_minimum_configurable_bullet_damage()
+        bullet_damage = min(self._configuration._bullet_damage, self.get_maximum_configurable_bullet_damage())
+        bullet_damage = max(bullet_damage, self.get_minimum_configurable_bullet_damage())
 
         return sum([
             self._configuration._max_hit_points,
@@ -579,9 +647,12 @@ class Robot(RobotStatus):
         """
         bullet_damage = self._configuration._bullet_damage
         delta = 0.5
-        while self.get_configured_strenght() > 1.0:
+        while self.get_configured_strenght() > 1.0 && bullet_damage >= self.get_minimum_configurable_bullet_damage():
             bullet_damage = bullet_damage - delta
             self._configuration._bullet_damage = bullet_damage
+
+        if bullet_damage < self.get_minimum_configurable_bullet_damage():
+            self.set_to_default_configured_strenght()
 
     def maximize_configured_strength(self):
         """
@@ -590,12 +661,14 @@ class Robot(RobotStatus):
         """
         bullet_damage = self._configuration._bullet_damage
         delta = 0.5
-        while self.get_configured_strenght() <= 1.0:
+        while self.get_configured_strenght() <= 1.0 && bullet_damage <= self.get_maximum_configurable_bullet_damage():
             bullet_damage = bullet_damage + delta
             self._configuration._bullet_damage = bullet_damage
 
-        self._configuration._bullet_damage = bullet_damage - delta
-
+        if bullet_damage >= self.get_maximum_configurable_bullet_damage():
+            self.set_to_default_configured_strenght()
+        else:
+            self._configuration._bullet_damage = bullet_damage - delta
 
     # TODO adapt
     def get_data(self):
@@ -645,6 +718,7 @@ class Robot(RobotStatus):
         direction, semiApertureAngle = float(int(direction) % 360), float(max(1, int(semiApertureAngle) % 180))
 
         # TODO sono sicuro sia eseguito nel tempo di simulazione giusto?
+        # TODO invocare questo insieme agli altri
         distance = self._board.radar(self, (self._pos_x, self._pos_y), self._configuration._max_scan_distance, direction, semiApertureAngle)
 
         scan = new ScanStatus()
@@ -680,12 +754,13 @@ class Robot(RobotStatus):
     def no_cannon(self):
         self._fired_new_missile = False
 
-    def distanceFromPoint(self, xy):
+    def distance_from_point(self, xy):
         """
         :type xy: (float, float)
         :rtype: float
         :param xy: point
-        :return: distance
+        :rtype: (float, float)
+        :return: distance, angle
         """
         dx = (xy[0] - self._pos_x)
         dy = (xy[1] - self._pos_y)
@@ -697,7 +772,8 @@ class Robot(RobotStatus):
     def distance(self, enemy):
         """
         :type enemy: Robot
-        :rtype: float
+        :rtype: (float, float)
+        :return: distance, angle
         """
         dist, angle = enemy.distance((self._pos_x, self._pos_y))
         angle = float(int(angle + 180.0) % 360)
@@ -714,8 +790,9 @@ class Robot(RobotStatus):
         """Update the status of the robot for a simulation tick.
 
         :type deltatime: float
-        :param deltatime:
         """
+
+
         # RELOADING
         if self._reloading:
             self._reloading_counter += deltatime
@@ -742,7 +819,7 @@ class Robot(RobotStatus):
         self._speed += delta * deltatime
 
         # COLLISION
-        collision = self._board.detect_collision(self, (self._pos_x, self._pos_y), (dx, dy))
+        collision = self._board.detect_collision(self, (dx, dy))
         if collision is not None:
             self.block()
             self._pos_x, self._pos_y = collision[:2]
@@ -758,7 +835,6 @@ class Robot(RobotStatus):
             self.block()
             self._health = 0
             self._is_dead = True
-
 
     def get_xy(self):
         """

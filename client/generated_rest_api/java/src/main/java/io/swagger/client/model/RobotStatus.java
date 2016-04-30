@@ -14,7 +14,7 @@ import io.swagger.client.model.ScanStatus;
  **/
 
 @ApiModel(description = "The current status of the robot.")
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-04-30T12:28:53.526+02:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-04-30T19:42:21.468+02:00")
 public class RobotStatus   {
   
   private String name = null;

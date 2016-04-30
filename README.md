@@ -1,7 +1,7 @@
-NETROBOT - Realtime
-===================
+NETROBOT
+========
 
-An experimental fork of [https://github.com/gbinside/netrobots], using Tornado Python Web Server, and a better REST API. 
+This is an experimental fork of [https://github.com/gbinside/netrobots], using Tornado Python Web Server, and a better REST API.
 
 Freely inspired/based on P-ROBOTS [http://corewar.co.uk/probots/p-robo4.txt]
 
@@ -70,40 +70,27 @@ NOTE:
 Robots Coding Instructions
 ==========================
 
-Programming Language
---------------------
+Robots can be written using any programming language, because they communicate with the server using REST API.
 
-Robots can be written using any programming language, because they communicate with the server using:
-* Proto Buffers serialization library
-* ZeroMQ message API
+Study `doc/rest_api.yaml` for a description of the API.
 
-API
----
+The code for many clients is generated from swagger, into `clients` directory. See also `external_tools` directory for the code generating the API.
 
-Study:
-* "client/netrobots.proto" for a description of the RobotStatus
-* "client/connect.py" for the API class
-* "example/python" for some example of Robot
+LICENSE
+=======
 
-BOARD
-=====
-* L'arena è di 1000x1000 basata in 0,0 in basso a sinistra
-* gli angoli si misurano in gradi
+    Copyright 2015, 2016 Roberto Gambuzzi <gbinside@gmail.com>
+    Copyright 2015, 2016 Massimo Zaniboni <massimo.zaniboni@gmail.com>
 
-              135    90   45
-                  \  |  /
-                   \ | /
-             180 --- x --- 0
-                   / | \
-                  /  |  \
-              225   270   315
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-* il robot occupa le sue coordinate, con una raggio di 1 (usato per il calcolo delle collisioni)
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-TODO
-=====
-
-* ~~I robot hanno tutti le stesse costanti di base, implementare un sistema a punti per personalizzarsi il robot.~~
-* Raffinare la logica di sterzo sopra la velocità massima di sterzo (`_max_sterling_speed`), magari con aggiunta di danno autoinflitto
-* L'urto con qualcosa infligge 2 punti di danno a prescindere dalla velocità al momento dell'impatto. Farlo dipendere dalla velocità?
-* Muri; ora l'arena è vuota, si potrebbere prevedere muri casuali, ma questo imporrebbe modifiche anche allo scanner.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.

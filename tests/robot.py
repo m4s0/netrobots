@@ -116,8 +116,8 @@ class RobotTestCase(unittest.TestCase):
         board = Board()
         robot1 = Robot(board, 'GUNDAM1')
 
-        self.assertEqual(robot1.distanceFromPoint((500, 500)), (250.0, 0.0))
-        self.assertEqual(robot1.distanceFromPoint((250, 1000)), (500.0, 90.0))
+        self.assertEqual(robot1.distance_from_point((500, 500)), (250.0, 0.0))
+        self.assertEqual(robot1.distance_from_point((250, 1000)), (500.0, 90.0))
 
 
 if __name__ == '__main__':

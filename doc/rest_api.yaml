@@ -3,6 +3,8 @@ info:
   title: NetRobots API
   description: NetRobots REST API specification, using Swagger format.
   version: '2.0'
+  license: GPL3
+  url: http://www.gnu.org/licenses/
 
 schemes:
   - http

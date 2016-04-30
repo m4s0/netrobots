@@ -12,7 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
  **/
 
 @ApiModel(description = "Missiles have a balistic trajectory, so they do not intercept robots in the middle of the path, but they damage only robot at the end of the path. Missile outside arena make no arm.")
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-04-30T12:28:53.526+02:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-04-30T19:42:21.468+02:00")
 public class FireCommand   {
   
   private Float direction = null;

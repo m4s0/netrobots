@@ -15,7 +15,7 @@ import io.swagger.client.model.ScanCommand;
  **/
 
 @ApiModel(description = "A Robot can make 3 actions contemporary: drive, scan, fire. If an action can not be performed, it will be ignored. If the drive action is not specified, the robot will continue moving according the last drive command.")
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-04-30T12:28:53.526+02:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-04-30T19:42:21.468+02:00")
 public class RobotCommand   {
   
   private String token = null;

@@ -1,13 +1,31 @@
-"""NetRobots Game Server.
-"""
+'''
+    Copyright 2015, 2016 Roberto Gambuzzi <gbinside@gmail.com>
+    Copyright 2015, 2016 Massimo Zaniboni <massimo.zaniboni@gmail.com>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+'''
+
 import tornado.ioloop
 import tornado.web
 from tornado import gen
 from tornado.concurrent import Future
 import httplib
 from rest_api.api_client import ApiClient
-from server.rest_api.models.robot_command import RobotCommand
-from server.rest_api.models.robot_status import RobotStatus
+from server.rest_api.models.robot_command import  as RobotCommand
+from server.rest_api.models.robot_status import  as RobotStatus
+from server.rest_api.models.drive_command import as DriveCommand
+from server.rest_api.models.fire_command import as FireCommand
 from server.game_model import Board, Robot
 
 import time
@@ -63,10 +81,6 @@ def process_game_turn():
     # TODO no robot can send a command 2 times, because it does not known in advance the next-token, until it does not receive an answer
     # TODO leave to None the not received commands
     # TODO update a stats table with the not received commands for a given robot, using robot-name as key
-    # TODO use a local copy of queuedTurnHandlerRequests
-    # TODO start with an empty queuedTurnHandlerRequests
-    # TODO doing so I'm sure that only requests about next turn are processed, because no new requests are queued
-    # TODO comment these things
     # TODO start answering to Futures (I must put in the future class the robot token)
     # TODO return
     # TODO see if it must also complete common answers for board-viewers, in case first favour answers to robot, then complete answers for board viewers that are on a separate queue
@@ -77,18 +91,17 @@ def process_game_turn():
 
     new_next_robot_commands = {}
 
+    # TODO essere sicuri di modificare il token quello anche della configurazione e non uno a caso
+
     from_old_to_new_tokens = {}
     for token, command in next_robot_commands.iteritems():
         """ :var command: RobotCommand
         """
-        robot = game_board.get_robot(token)
-        if command is None:
-            robot.reset_command()
-            from_old_to_new_tokens[token] = token
-        else:
-            new_token = robot.set_command(command)
-            new_next_robot_commands[new_token] = None
-            from_old_to_new_tokens[token] = new_token
+        robot = game_board.get_robot_by_token(token)
+        robot.set_next_command(command)
+        new_token = robot.get_token()
+        new_next_robot_commands[new_token] = None
+        from_old_to_new_tokens[token] = new_token
 
     #
     # Advance the board.
