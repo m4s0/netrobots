@@ -1,3 +1,27 @@
+2016-04-30
+
+Server
+======
+
+Switched to REST API, JSON, and Tornado web server, with fair turns.
+
+Changed Rules of the Games
+==========================
+
+All values are now in float.
+
+Changes in Initial Robot Configurations
+=======================================
+
+Bullet damage can be configured only as maximum value, then its proportional damage respect the target is a fixed value.
+
+Strenght of robot is maximized or minimized according the initial params.
+
+Code
+====
+
+Reviewed all code. Added comments, and type annotations. Minor bug fixing.
+
 2015-03-03
 
 The server now uses for communicating with clients:

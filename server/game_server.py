@@ -15,11 +15,6 @@ from datetime import timedelta
 from game_model import *
 import json
 
-# TODO accetto i parametri di simulazione sulla riga di comando e li spinge nel model e altri posti
-# TODO tiene dietro a delle statistiche di funzionamento e dice se ci sono dei ritardi
-# TODO dire che il codice lavora correttamente solo se vi e` un solo thread in esecuzione e quindi ogni coroutine accede in isolamento alle data structures
-# TODO accept in params the interval between commands
-# TODO gestire caso in cui i robot per un turno non ricevono commands e devono fare comunque qualcosa di sensato
 
 class TurnAnswerFuture(Future):
     """A TurnHandler waiting a response. The response will be a RobotStatus.

@@ -1,5 +1,4 @@
 
-
 for L in 'python' 'java' 'html' 'haskell-servant' 'go' 'javascript' 'php' 'ruby' 'dynamic-html'
 do
   OUT_DIR=../client/generated_rest_api/$L
@@ -9,5 +8,4 @@ done
 
 # Generate the JSON API for the server.
 OUT_DIR=../server/rest_api
-rm -r -f $OUT_DIR
 cp -r ../client/generated_rest_api/python/swagger_client $OUT_DIR

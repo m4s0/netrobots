@@ -1,0 +1,80 @@
+
+<h2>RobotConfiguration</h2>
+  
+<ul class="parameter">
+  <li class="param-required-true">name : String
+    <br/>
+    
+  </li>
+</ul>
+  
+<ul class="parameter">
+  <li class="param-required-">maxHitPoints : Float
+    <br/>The initial health of the robot. Default value: 100.0
+    
+  </li>
+</ul>
+  
+<ul class="parameter">
+  <li class="param-required-">maxSpeed : Float
+    <br/>Max speed of the robot. Default value: 27.0 m/s
+    
+  </li>
+</ul>
+  
+<ul class="parameter">
+  <li class="param-required-">acceleration : Float
+    <br/>Acceleration of the robot. Default value 9.0 m/s^2
+    
+  </li>
+</ul>
+  
+<ul class="parameter">
+  <li class="param-required-">decelleration : Float
+    <br/>The max deceleration in case of reduction of the speed. A negative number. Default value -5.0 m/s^2
+    
+  </li>
+</ul>
+  
+<ul class="parameter">
+  <li class="param-required-">maxSterlingSpeed : Float
+    <br/>The maximim speed at which a robot can change direction.  Default value 13.0 m/s.\nIf the robot changes direction when it has a speed greater than this value, it start decelerating without changing direction, until it does not reach the steerling speed.\n
+    
+  </li>
+</ul>
+  
+<ul class="parameter">
+  <li class="param-required-">maxScanDistance : Float
+    <br/>The max distance the robot can identify targets. Default value: 700 m/s.
+    
+  </li>
+</ul>
+  
+<ul class="parameter">
+  <li class="param-required-">maxFireDistance : Float
+    <br/>The max distance a bullet can reach. Default value: 700 m/s.
+    
+  </li>
+</ul>
+  
+<ul class="parameter">
+  <li class="param-required-">bulletSpeed : Float
+    <br/>The speed of a fired bullet. Default value: 500 m/s.
+    
+  </li>
+</ul>
+  
+<ul class="parameter">
+  <li class="param-required-">bulletDamage : Float
+    <br/>The max health damage a bullet can inflict when it reach exactly the target.\nDefault value: 10.0.\nActually max allowed value is 20 and minimum allowed value is 1.\nThe bullet hit exactly a target in case the explosion is within a certain distance, actually 2 meters.\nThe bullet can make a limited damage if it explodes near the target.\nThe limited damage decrease linearly from 10% to 0%, from 2 meters to 45 meters distance from the target.\nWhen you configure a robot, it is associated a strenght using an heuristic, based on robot configured characteristics.\nThen the bulletDamage is increased until it does not reach the maximum value respecting the maximum allowed robot strenght.\n
+    
+  </li>
+</ul>
+  
+<ul class="parameter">
+  <li class="param-required-">fireReloadingTime : Float
+    <br/>How many seconds the robot must wait before firing another missile. Deafault value: 1.0 s\nActually this value must be within 1.0 s and 6.0 s\n
+    
+  </li>
+</ul>
+  
