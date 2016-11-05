@@ -1,6 +1,11 @@
 NETROBOT - Realtime
 ===================
 
+IMPORTANT: this is a version of the game-server based on ZeroMQ libraries. 
+It is not any more supported/current.
+The development switched to a normal HHTP based version, using Tornado http server
+for answering to clients only when it is their turn.
+
 An experimental fork of [https://github.com/gbinside/netrobots], using ZMQ and Protobuffer.
 
 Liberamente basato su P-ROBOTS [http://corewar.co.uk/probots/p-robo4.txt]
